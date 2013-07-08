@@ -1,0 +1,41 @@
+{
+  "name" : "jquery.dragdrop",
+  "title" : "jQuery DragDrop",
+  "version" : "0.1.0-dev",
+  "description" : "Create draggable DOM elements and their associated drop targets",
+  "keywords": ["drag", "drop", "dragdrop", "dnd", "jquery", "draggable", "droppable"],
+  "homepage" : "https://github.com/steveluscher/jquery.dragdrop",
+  "authors" : [{
+    "name" : "Steven Luscher",
+    "email" : "jquerydragdrop@steveluscher.com",
+    "url" : "http://lakefieldmusic.com"
+  },
+  {
+    "name" : "Ruboss Technology Corporation",
+    "email" : "hello@ruboss.com",
+    "url" : "http://ruboss.com"
+  }],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/steveluscher/jquery.dragdrop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/steveluscher/jquery.dragdrop/issues"
+  },
+  "licenses": [{
+    "type": "MIT",
+    "url": "https://github.com/steveluscher/jquery.dragdrop/blob/master/LICENSE"
+  }],
+  "devDependencies" : {
+    "grunt"                : "*",
+    "grunt-cli"            : "*",
+    "grunt-contrib-watch"  : "*",
+    "grunt-contrib-coffee" : "*",
+    "grunt-contrib-jasmine": "*",
+    "grunt-contrib-uglify" : "*",
+    "grunt-growl"          : "*"
+  },
+  "scripts": {
+    "test": "grunt travis"
+  }
+}
