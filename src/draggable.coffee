@@ -1,9 +1,9 @@
 #
-# Name    : <plugin name>
-# Author  : <your name>, <your website url>, <twitter handle>
-# Version : <version number>
-# Repo    : <repo url>
-# Website : <website url>
+# Name      : jquery.dragdrop
+# Author    : Steven Luscher, https://twitter.com/steveluscher
+# Version   : 0.0.1-dev
+# Repo      : https://github.com/steveluscher/jquery.dragdrop
+# Donations : http://lakefieldmusic.com
 #
 
 
