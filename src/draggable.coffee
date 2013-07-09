@@ -54,6 +54,9 @@ jQuery ->
     #
 
     handleElementMouseDown: (e) =>
+      # Bail if this is not a valid handle
+      return unless @isValidHandle(e.target)
+
       # Store the start position of the draggable
       for edge in ['top', 'left']
         @elementStartPosition[edge] = parseInt(@$element.css edge)
@@ -142,6 +145,20 @@ jQuery ->
       @$element.css
         left: parseInt(@elementStartPosition.left) + delta.x
         top: parseInt(@elementStartPosition.top) + delta.y
+
+    #
+    # Validators
+    #
+
+    isValidHandle: (element) ->
+      if @config.handle
+        $element = $(element)
+
+        # Is this element the handle itself, or a descendant of the handle?
+        !!$element.closest(@config.handle).length
+      else
+        # No handle was specified; anything is fair game
+        true
 
   $.fn.draggable = (options) ->
     this.each ->

@@ -127,6 +127,83 @@ describe 'Draggable', ->
         it 'should call the stop callback with the jQuery mouse event as the first parameter', ->
           expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
 
+  selector = '#handle'
+  configVariants =
+    'selector': -> selector
+    'DOM element': -> $(selector).get(0)
+    'jQuery object': -> $(selector)
+
+  for variant, getHandleConfig of configVariants
+    do (variant, getHandleConfig) ->
+
+      describe "configured with a #{variant} as a drag handle", ->
+
+        beforeEach ->
+          loadFixtures 'draggable_with_handle.html'
+
+          # Get the handle config, and the handle itself
+          @handleConfig = getHandleConfig()
+          @handle = $(@handleConfig)
+
+          @$draggable = $('#draggable').draggable(handle: @handleConfig)
+
+        describe 'after having been dragged by its handle', ->
+
+          beforeEach ->
+            # The draggable's start position
+            @start = @$draggable.offset()
+
+            # Drag the draggable a standard distance, using the handle
+            @handle.simulate 'drag',
+              moves: 1
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+            # The draggable's end position
+            @end = @$draggable.offset()
+
+          it 'should have triggered a drag', ->
+            expect(@end.top - @start.top).toBe(options.dragDistance)
+            expect(@end.left - @start.left).toBe(options.dragDistance)
+
+        describe 'after having been dragged by a descendant of its handle', ->
+
+          beforeEach ->
+            # The draggable's start position
+            @start = @$draggable.offset()
+
+            # Drag the draggable a standard distance, using the handle
+            @handle.children().simulate 'drag',
+              moves: 1
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+            # The draggable's end position
+            @end = @$draggable.offset()
+
+          it 'should have triggered a drag', ->
+            expect(@end.top - @start.top).toBe(options.dragDistance)
+            expect(@end.left - @start.left).toBe(options.dragDistance)
+
+        describe 'after having been dragged by something other than its handle', ->
+
+          beforeEach ->
+            # The draggable's start position
+            @start = @$draggable.offset()
+
+            # Drag the draggable a standard distance, using the handle
+            @$draggable.simulate 'drag',
+              moves: 1
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+            # The draggable's end position
+            @end = @$draggable.offset()
+
+          it 'should not have triggered a drag', ->
+            expect(@end.top - @start.top).toBe(0)
+            expect(@end.left - @start.left).toBe(0)
+
   describe 'any draggable', ->
 
     beforeEach ->
