@@ -112,6 +112,9 @@ jQuery ->
     #
 
     handleDragStart: ->
+      # Call any user-supplied start callback
+      @config.start?()
+
       @$element
         # Apply the dragging class
         .addClass(@getConfig().draggingClass)
@@ -123,8 +126,13 @@ jQuery ->
       @dragStarted = true
 
     handleDragStop: ->
+      # Call any user-supplied stop callback
+      @config.stop?()
 
     handleDrag: (e) ->
+      # Call any user-supplied drag callback
+      @config.drag?()
+
       # How far has the mouse moved from its original position
       delta =
         x: e.pageX - @mousedownEvent.pageX

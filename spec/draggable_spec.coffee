@@ -41,6 +41,83 @@ describe 'Draggable', ->
       it 'should possess the supplied dragging class', ->
         expect(@$draggable).toHaveClass options.alternateDraggingClass
 
+  describe 'configured with callbacks', ->
+
+    beforeEach ->
+      @callback = jasmine.createSpy('callback')
+
+    describe 'such as a start callback', ->
+
+      beforeEach ->
+        loadFixtures 'draggable.html'
+        @$draggable = $('#draggable').draggable(start: @callback)
+
+      describe 'when clicked without having been dragged', ->
+
+        beforeEach ->
+          # Click the draggable, but don't move it
+          @$draggable.simulate 'click'
+
+        it 'should not call the start callback', ->
+          expect(@callback).not.toHaveBeenCalled()
+
+      describe 'when dragged', ->
+
+        beforeEach ->
+          # Drag the draggable a standard distance
+          @$draggable.simulate 'drag',
+            moves: 1
+            dx: options.dragDistance
+            dy: options.dragDistance
+
+        it 'should call the start callback', ->
+          expect(@callback).toHaveBeenCalled()
+
+    describe 'such as a drag callback', ->
+
+      beforeEach ->
+        loadFixtures 'draggable.html'
+        @$draggable = $('#draggable').draggable(drag: @callback)
+
+      describe 'when dragged', ->
+
+        beforeEach ->
+          # Drag the draggable a standard distance
+          @$draggable.simulate 'drag',
+            moves: 10
+            dx: options.dragDistance
+            dy: options.dragDistance
+
+        it 'should call the drag callback once for every mouse movement', ->
+          expect(@callback.callCount).toBe(10)
+
+    describe 'such as a stop callback', ->
+
+      beforeEach ->
+        loadFixtures 'draggable.html'
+        @$draggable = $('#draggable').draggable(stop: @callback)
+
+      describe 'when clicked without having been dragged', ->
+
+        beforeEach ->
+          # Click the draggable, but don't move it
+          @$draggable.simulate 'click'
+
+        it 'should not call the stop callback', ->
+          expect(@callback).not.toHaveBeenCalled()
+
+      describe 'after having been dragged', ->
+
+        beforeEach ->
+          # Drag the draggable a standard distance
+          @$draggable.simulate 'drag',
+            moves: 1
+            dx: options.dragDistance
+            dy: options.dragDistance
+
+        it 'should call the stop callback', ->
+          expect(@callback).toHaveBeenCalled()
+
   describe 'any draggable', ->
 
     beforeEach ->
