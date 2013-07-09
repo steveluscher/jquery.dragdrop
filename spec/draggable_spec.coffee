@@ -3,6 +3,10 @@ describe 'Draggable', ->
     dragDistance: 50
     alternateDraggableClass: 'alternateDraggableClass'
     alternateDraggingClass: 'alternateDraggingClass'
+    handleConfigVariants:
+      'selector': -> '#handle'
+      'DOM element': -> $('#handle').get(0)
+      'jQuery object': -> $('#handle')
 
   describe 'configured using the default options', ->
 
@@ -125,13 +129,7 @@ describe 'Draggable', ->
         it 'should call the stop callback with the jQuery mouse event as the first parameter', ->
           expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
 
-  selector = '#handle'
-  configVariants =
-    'selector': -> selector
-    'DOM element': -> $(selector).get(0)
-    'jQuery object': -> $(selector)
-
-  for variant, getHandleConfig of configVariants
+  for variant, getHandleConfig of options.handleConfigVariants
     do (variant, getHandleConfig) ->
 
       describe "configured with a #{variant} as a drag handle", ->
