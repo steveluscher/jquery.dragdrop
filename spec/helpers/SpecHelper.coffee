@@ -13,3 +13,6 @@ class this.SpecHelper
       clientX: center.x
       clientY: center.y
     center
+
+  @isNumber: (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
+  @isNaN: (obj) -> @isNumber(obj) and window.isNaN(obj)
