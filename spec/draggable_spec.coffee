@@ -73,6 +73,9 @@ describe 'Draggable', ->
         it 'should call the start callback', ->
           expect(@callback).toHaveBeenCalled()
 
+        it 'should call the start callback with the jQuery mouse event as the first parameter', ->
+          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+
     describe 'such as a drag callback', ->
 
       beforeEach ->
@@ -90,6 +93,9 @@ describe 'Draggable', ->
 
         it 'should call the drag callback once for every mouse movement', ->
           expect(@callback.callCount).toBe(10)
+
+        it 'should call the drag callback with the jQuery mouse event as the first parameter', ->
+          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
 
     describe 'such as a stop callback', ->
 
@@ -117,6 +123,9 @@ describe 'Draggable', ->
 
         it 'should call the stop callback', ->
           expect(@callback).toHaveBeenCalled()
+
+        it 'should call the stop callback with the jQuery mouse event as the first parameter', ->
+          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
 
   describe 'any draggable', ->
 

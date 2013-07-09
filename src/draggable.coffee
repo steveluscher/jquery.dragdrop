@@ -98,11 +98,11 @@ jQuery ->
       @$element.removeClass @getConfig().draggingClass
 
       # Trigger the stop event
-      @handleDragStop()
+      @handleDragStop(e)
 
     handleDocumentMouseMove: (e) =>
       # Trigger the start event, once
-      @handleDragStart() unless @dragStarted
+      @handleDragStart(e) unless @dragStarted
 
       # Trigger the drag event
       @handleDrag(e)
@@ -111,9 +111,9 @@ jQuery ->
     # Draggable events
     #
 
-    handleDragStart: ->
+    handleDragStart: (e) ->
       # Call any user-supplied start callback
-      @config.start?()
+      @config.start?(e)
 
       @$element
         # Apply the dragging class
@@ -125,13 +125,13 @@ jQuery ->
       # Mark the drag as having started
       @dragStarted = true
 
-    handleDragStop: ->
+    handleDragStop: (e) ->
       # Call any user-supplied stop callback
-      @config.stop?()
+      @config.stop?(e)
 
     handleDrag: (e) ->
       # Call any user-supplied drag callback
-      @config.drag?()
+      @config.drag?(e)
 
       # How far has the mouse moved from its original position
       delta =
