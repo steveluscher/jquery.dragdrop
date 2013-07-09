@@ -11,16 +11,25 @@ jQuery ->
   # Utility functions
   isNumber = (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
   isNaN = (obj) -> isNumber(obj) and window.isNaN(obj)
+  applyDefaults = (obj, sources...) ->
+    for source in sources
+      continue unless source
+      for prop of source
+        obj[prop] = source[prop] if obj[prop] is undefined
+    obj
 
   $.draggable = class
     defaults:
-      classes:
-        # Applied when the draggable is initialized
-        draggable: 'ui-draggable'
-        # Applied when a draggable is in mid-drag
-        dragging: 'ui-draggable-dragging'
+      # Applied when the draggable is initialized
+      draggableClass: 'ui-draggable'
 
-    constructor: (element, options) ->
+      # Applied when a draggable is in mid-drag
+      draggingClass: 'ui-draggable-dragging'
+
+    # Memoize the config
+    getConfig: -> @config ||= applyDefaults @options, @defaults
+
+    constructor: (element, @options = {}) ->
       # jQuery version of DOM element attached to the plugin
       @$element = $ element
 
@@ -38,7 +47,7 @@ jQuery ->
           mouseup: @handleMouseUp
 
         # Mark this element as draggable with a class
-        .addClass(@defaults.classes.draggable)
+        .addClass(@getConfig().draggableClass)
 
       # make the plugin chainable
       this
@@ -61,7 +70,7 @@ jQuery ->
 
       @$element
         # Apply the dragging class
-        .addClass(@defaults.classes.dragging)
+        .addClass(@getConfig().draggingClass)
 
         # FIXME relative stuff
         .css
@@ -76,7 +85,7 @@ jQuery ->
         mousemove: @handleMouseMove
 
       # Remove the dragging class
-      @$element.removeClass @defaults.classes.dragging
+      @$element.removeClass @getConfig().draggingClass
 
       # Clean up
       @elementStartPosition = {}
