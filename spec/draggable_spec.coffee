@@ -66,7 +66,6 @@ describe 'Draggable', ->
         beforeEach ->
           # Drag the draggable a standard distance
           @$draggable.simulate 'drag',
-            moves: 1
             dx: options.dragDistance
             dy: options.dragDistance
 
@@ -117,7 +116,6 @@ describe 'Draggable', ->
         beforeEach ->
           # Drag the draggable a standard distance
           @$draggable.simulate 'drag',
-            moves: 1
             dx: options.dragDistance
             dy: options.dragDistance
 
@@ -155,7 +153,6 @@ describe 'Draggable', ->
 
             # Drag the draggable a standard distance, using the handle
             @handle.simulate 'drag',
-              moves: 1
               dx: options.dragDistance
               dy: options.dragDistance
 
@@ -174,7 +171,6 @@ describe 'Draggable', ->
 
             # Drag the draggable a standard distance, using the handle
             @handle.children().simulate 'drag',
-              moves: 1
               dx: options.dragDistance
               dy: options.dragDistance
 
@@ -193,7 +189,6 @@ describe 'Draggable', ->
 
             # Drag the draggable a standard distance, using the handle
             @$draggable.simulate 'drag',
-              moves: 1
               dx: options.dragDistance
               dy: options.dragDistance
 
@@ -253,7 +248,6 @@ describe 'Draggable', ->
 
         # Drag the draggable a standard distance
         @$draggable.simulate 'drag',
-          moves: 1
           dx: options.dragDistance
           dy: options.dragDistance
 
@@ -300,7 +294,6 @@ describe 'Draggable', ->
 
         # Drag the draggable a standard distance
         @$draggable.simulate 'drag',
-          moves: 1
           dx: options.dragDistance
           dy: options.dragDistance
 
