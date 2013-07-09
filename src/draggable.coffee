@@ -38,10 +38,10 @@ jQuery ->
       @elementStartOffset = {}
 
       @$element
-        # Attach mouse event handlers
+        # Attach the element event handlers
         .on
-          mousedown: @handleMouseDown
-          mouseup: @handleMouseUp
+          mousedown: @handleElementMouseDown
+          click: @handleElementClick
 
         # Mark this element as draggable with a class
         .addClass(@getConfig().draggableClass)
@@ -49,7 +49,11 @@ jQuery ->
       # make the plugin chainable
       this
 
-    handleMouseDown: (e) =>
+    #
+    # Mouse events
+    #
+
+    handleElementMouseDown: (e) =>
       # Store the start position of the draggable
       for edge in ['top', 'left']
         @elementStartPosition[edge] = parseInt(@$element.css edge)
@@ -61,20 +65,17 @@ jQuery ->
       # Store the mousedown event that started this drag
       @mousedownEvent = e
 
-      # Start to listen for mousemove events
+      # Start to listen for mouse events on the document
       $(document).on
-        mousemove: @handleMouseMove
+        mousemove: @handleDocumentMouseMove
+        mouseup: @handleDocumentMouseUp
 
-      # Capture the mouse event
+      # Stop the mousedown event
       false
 
-    handleMouseUp: (e) =>
-      # Stop listening for mousemove events
-      $(document).off
-        mousemove: @handleMouseMove
-
-      # Remove the dragging class
-      @$element.removeClass @getConfig().draggingClass
+    handleElementClick: (e) =>
+      # Clicks should be passed through if this interaction didn't result in a drag
+      shouldPermitClick = not @dragStarted
 
       # Clean up
       @dragStarted = false
@@ -82,22 +83,35 @@ jQuery ->
       @elementStartOffset = {}
       delete @mousedownEvent
 
-    handleMouseMove: (e) =>
-      # Mark the drag as having started
+      unless shouldPermitClick
+        # Cancel the click
+        e.stopImmediatePropagation()
+        false
+
+    handleDocumentMouseUp: (e) =>
+      # Stop listening for mouse events on the document
+      $(document).off
+        mousemove: @handleMouseMove
+        mouseup: @handleMouseUp
+
+      # Remove the dragging class
+      @$element.removeClass @getConfig().draggingClass
+
+      # Trigger the stop event
+      @handleDragStop()
+
+    handleDocumentMouseMove: (e) =>
+      # Trigger the start event, once
       @handleDragStart() unless @dragStarted
 
-      # How far has the mouse moved from its original position
-      delta =
-        x: e.pageX - @mousedownEvent.pageX
-        y: e.pageY - @mousedownEvent.pageY
+      # Trigger the drag event
+      @handleDrag(e)
 
-      # Move the element
-      @$element.css
-        left: parseInt(@elementStartPosition.left) + delta.x
-        top: parseInt(@elementStartPosition.top) + delta.y
+    #
+    # Draggable events
+    #
 
     handleDragStart: ->
-
       @$element
         # Apply the dragging class
         .addClass(@getConfig().draggingClass)
@@ -107,6 +121,19 @@ jQuery ->
 
       # Mark the drag as having started
       @dragStarted = true
+
+    handleDragStop: ->
+
+    handleDrag: (e) ->
+      # How far has the mouse moved from its original position
+      delta =
+        x: e.pageX - @mousedownEvent.pageX
+        y: e.pageY - @mousedownEvent.pageY
+
+      # Move the element
+      @$element.css
+        left: parseInt(@elementStartPosition.left) + delta.x
+        top: parseInt(@elementStartPosition.top) + delta.y
 
   $.fn.draggable = (options) ->
     this.each ->

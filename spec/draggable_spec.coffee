@@ -59,6 +59,17 @@ describe 'Draggable', ->
       it 'should capture the mousedown event', ->
         expect('mousedown').toHaveBeenPreventedOn(@$draggable)
 
+    describe 'when clicked without having been dragged', ->
+
+      beforeEach ->
+        spyOnEvent @$draggable, 'click'
+
+        # Click the draggable, but don't move it
+        @$draggable.simulate 'click'
+
+      it 'should receive the click event', ->
+        expect('click').toHaveBeenTriggeredOn(@$draggable)
+
     describe 'while in mid-drag', ->
 
       beforeEach ->
@@ -75,6 +86,8 @@ describe 'Draggable', ->
     describe 'after having been dragged', ->
 
       beforeEach ->
+        spyOnEvent @$draggable, 'click'
+
         # Drag the draggable a standard distance
         @$draggable.simulate 'drag',
           moves: 1
@@ -83,6 +96,9 @@ describe 'Draggable', ->
 
       it 'should not possess the default dragging class', ->
         expect(@$draggable).not.toHaveClass $.draggable::defaults['draggingClass']
+
+      it 'should not receive the click event', ->
+        expect('click').not.toHaveBeenTriggeredOn(@$draggable)
 
   describe 'a statically positioned draggable', ->
 
