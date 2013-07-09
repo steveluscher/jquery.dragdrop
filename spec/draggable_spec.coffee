@@ -47,7 +47,7 @@ describe 'Draggable', ->
       loadFixtures 'draggable.html'
       @$draggable = $('#draggable').draggable()
 
-    describe 'when clicked on', ->
+    describe 'when mousedowned upon', ->
 
       beforeEach ->
         spyOnEvent @$draggable, 'mousedown'
