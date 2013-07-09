@@ -68,14 +68,6 @@ jQuery ->
       @$document.on
         mousemove: @handleMouseMove
 
-      @$element
-        # Apply the dragging class
-        .addClass(@getConfig().draggingClass)
-
-        # FIXME relative stuff
-        .css
-          position: 'relative'
-
       # Capture the mouse event
       false
 
@@ -88,11 +80,15 @@ jQuery ->
       @$element.removeClass @getConfig().draggingClass
 
       # Clean up
+      @dragStarted = false
       @elementStartPosition = {}
       @elementStartOffset = {}
       delete @mousedownEvent
 
     handleMouseMove: (e) =>
+      # Mark the drag as having started
+      @handleDragStart() unless @dragStarted
+
       # How far has the mouse moved from its original position
       delta =
         x: e.pageX - @mousedownEvent.pageX
@@ -102,6 +98,18 @@ jQuery ->
       @$element.css
         left: parseInt(@elementStartPosition.left) + delta.x
         top: parseInt(@elementStartPosition.top) + delta.y
+
+    handleDragStart: ->
+
+      @$element
+        # Apply the dragging class
+        .addClass(@getConfig().draggingClass)
+
+        # Position the draggable relative
+        .css(position: 'relative')
+
+      # Mark the drag as having started
+      @dragStarted = true
 
   $.fn.draggable = (options) ->
     this.each ->

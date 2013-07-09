@@ -47,10 +47,19 @@ describe 'Draggable', ->
       loadFixtures 'draggable.html'
       @$draggable = $('#draggable').draggable()
 
+    it 'should be positioned statically', ->
+      expect(@$draggable).toHaveCss { position: 'static' }
+
     describe 'when clicked on', ->
       beforeEach ->
         spyOnEvent @$draggable, 'mousedown'
         SpecHelper.mouseDownInCenterOf @$draggable
+
+      it 'should be positioned statically', ->
+        expect(@$draggable).toHaveCss { position: 'static' }
+
+      it 'should not possess the default dragging class', ->
+        expect(@$draggable).not.toHaveClass $.draggable::defaults['draggingClass']
 
       it 'should capture the click event', ->
         expect('mousedown').toHaveBeenPreventedOn(@$draggable)
@@ -63,6 +72,9 @@ describe 'Draggable', ->
         $(document).simulate 'mousemove',
           clientX: center.x + options.dragDistance
           clientY: center.y + options.dragDistance
+
+      it 'should be positioned relatively', ->
+        expect(@$draggable).toHaveCss { position: 'relative' }
 
       it 'should possess the default dragging class', ->
         expect(@$draggable).toHaveClass $.draggable::defaults['draggingClass']
