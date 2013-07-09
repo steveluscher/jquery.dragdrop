@@ -33,9 +33,6 @@ jQuery ->
       # jQuery version of DOM element attached to the plugin
       @$element = $ element
 
-      # jQuery version of the document element
-      @$document = $ document
-
       # Storage for the start position of the draggable upon mousedown
       @elementStartPosition = {}
       @elementStartOffset = {}
@@ -65,7 +62,7 @@ jQuery ->
       @mousedownEvent = e
 
       # Start to listen for mousemove events
-      @$document.on
+      $(document).on
         mousemove: @handleMouseMove
 
       # Capture the mouse event
@@ -73,7 +70,7 @@ jQuery ->
 
     handleMouseUp: (e) =>
       # Stop listening for mousemove events
-      @$document.off
+      $(document).off
         mousemove: @handleMouseMove
 
       # Remove the dragging class
