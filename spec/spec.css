@@ -1,6 +1,15 @@
 #draggable { }
 #draggable.absolute {
   position: absolute;
+  top: 150px;
+  left: 250px;
+  width: 100px;
+  height: 100px;
+}
+#draggable.fixed {
+  position: fixed;
+  top: 25px;
+  left: 250px;
   width: 100px;
   height: 100px;
 }

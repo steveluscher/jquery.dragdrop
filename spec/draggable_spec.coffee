@@ -304,3 +304,97 @@ describe 'Draggable', ->
       it 'should find itself the drag distance from its original left offset', ->
         expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
+  describe 'an absolutely positioned draggable', ->
+
+    beforeEach ->
+      loadFixtures 'draggable_absolute.html'
+      @$draggable = $('#draggable.absolute').draggable()
+
+    describe 'when clicked on', ->
+
+      beforeEach ->
+        spyOnEvent @$draggable, 'mousedown'
+        SpecHelper.mouseDownInCenterOf @$draggable
+
+      it 'should be positioned absolutely', ->
+        expect(@$draggable).toHaveCss { position: 'absolute' }
+
+    describe 'while in mid-drag', ->
+
+      beforeEach ->
+        center = SpecHelper.mouseDownInCenterOf @$draggable
+
+        # Move it by the prescribed amount, without lifting the mouse button
+        $(document).simulate 'mousemove',
+          clientX: center.x + options.dragDistance
+          clientY: center.y + options.dragDistance
+
+      it 'should be positioned absolutely', ->
+        expect(@$draggable).toHaveCss { position: 'absolute' }
+
+    describe 'after having been dragged', ->
+
+      beforeEach ->
+        @originalOffset = @$draggable.offset()
+
+        # Drag the draggable a standard distance
+        @$draggable.simulate 'drag',
+          dx: options.dragDistance
+          dy: options.dragDistance
+
+      it 'should be positioned absolutely', ->
+        expect(@$draggable).toHaveCss { position: 'absolute' }
+
+      it 'should find itself the drag distance from its original top offset', ->
+        expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
+
+      it 'should find itself the drag distance from its original left offset', ->
+        expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
+
+  describe 'a fixed positioned draggable', ->
+
+    beforeEach ->
+      loadFixtures 'draggable_fixed.html'
+      @$draggable = $('#draggable.fixed').draggable()
+
+    describe 'when clicked on', ->
+
+      beforeEach ->
+        spyOnEvent @$draggable, 'mousedown'
+        SpecHelper.mouseDownInCenterOf @$draggable
+
+      it 'should be positioned fixedly', ->
+        expect(@$draggable).toHaveCss { position: 'fixed' }
+
+    describe 'while in mid-drag', ->
+
+      beforeEach ->
+        center = SpecHelper.mouseDownInCenterOf @$draggable
+
+        # Move it by the prescribed amount, without lifting the mouse button
+        $(document).simulate 'mousemove',
+          clientX: center.x + options.dragDistance
+          clientY: center.y + options.dragDistance
+
+      it 'should be positioned fixedly', ->
+        expect(@$draggable).toHaveCss { position: 'fixed' }
+
+    describe 'after having been dragged', ->
+
+      beforeEach ->
+        @originalOffset = @$draggable.offset()
+
+        # Drag the draggable a standard distance
+        @$draggable.simulate 'drag',
+          dx: options.dragDistance
+          dy: options.dragDistance
+
+      it 'should be positioned fixedly', ->
+        expect(@$draggable).toHaveCss { position: 'fixed' }
+
+      it 'should find itself the drag distance from its original top offset', ->
+        expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
+
+      it 'should find itself the drag distance from its original left offset', ->
+        expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
+
