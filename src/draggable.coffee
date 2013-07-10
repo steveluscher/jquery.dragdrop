@@ -33,10 +33,6 @@ jQuery ->
       # jQuery version of DOM element attached to the plugin
       @$element = $ element
 
-      # Storage for the start position of the draggable upon mousedown
-      @elementStartPosition = {}
-      @elementStartOffset = {}
-
       @$element
         # Attach the element event handlers
         .on
@@ -49,6 +45,13 @@ jQuery ->
       # make the plugin chainable
       this
 
+    setupElement: ->
+      # Position the draggable relative if it's currently statically positioned
+      @$element.css(position: 'relative') if @$element.css('position') is 'static'
+
+      # Done!
+      @setupPerformed = true
+
     #
     # Mouse events
     #
@@ -59,6 +62,7 @@ jQuery ->
 
       # Store the start position of the draggable
       for edge in ['top', 'left']
+        @elementStartPosition ||= {}
         @elementStartPosition[edge] = parseInt(@$element.css edge)
         @elementStartPosition[edge] = 0 if isNaN(@elementStartPosition[edge])
 
@@ -117,15 +121,15 @@ jQuery ->
     #
 
     handleDragStart: (e) ->
+      # Lazily perform setup on the element
+      @setupElement() unless @setupPerformed
+
       # Call any user-supplied start callback
       @config.start?(e)
 
       @$element
         # Apply the dragging class
         .addClass(@getConfig().draggingClass)
-
-        # Position the draggable relative
-        .css(position: 'relative')
 
       # Mark the drag as having started
       @dragStarted = true
