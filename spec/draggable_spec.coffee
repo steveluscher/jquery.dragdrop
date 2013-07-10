@@ -288,9 +288,7 @@ describe 'Draggable', ->
     describe 'after having been dragged', ->
 
       beforeEach ->
-        for edge in ['top', 'left']
-          value = parseInt @$draggable.css(edge)
-          @["original#{edge.charAt(0).toUpperCase()}#{edge.slice(1)}"] = if SpecHelper.isNaN(value) then 0 else value
+        @originalOffset = @$draggable.offset()
 
         # Drag the draggable a standard distance
         @$draggable.simulate 'drag',
@@ -300,9 +298,9 @@ describe 'Draggable', ->
       it 'should be positioned relatively', ->
         expect(@$draggable).toHaveCss { position: 'relative' }
 
-      it 'should find itself the drag distance from its original top', ->
-        expect(@$draggable).toHaveCss { top: "#{@originalTop + options.dragDistance}px" }
+      it 'should find itself the drag distance from its original top offset', ->
+        expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
 
-      it 'should find itself the drag distance from its original left', ->
-        expect(@$draggable).toHaveCss { left: "#{@originalLeft + options.dragDistance}px" }
+      it 'should find itself the drag distance from its original left offset', ->
+        expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
