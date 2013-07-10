@@ -48,7 +48,7 @@ jQuery ->
         # Mark this element as draggable with a class
         .addClass(@getConfig().draggableClass)
 
-      # make the plugin chainable
+      # Make the plugin chainable
       this
 
     setupElement: ->
