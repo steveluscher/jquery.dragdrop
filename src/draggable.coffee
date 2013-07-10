@@ -97,6 +97,8 @@ jQuery ->
         mousemove: @handleMouseMove
         mouseup: @handleMouseUp
 
+      return unless @dragStarted
+
       # Remove the dragging class
       @$element.removeClass @getConfig().draggingClass
 

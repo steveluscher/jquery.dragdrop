@@ -110,6 +110,8 @@ describe 'Draggable', ->
 
         beforeEach ->
           # Click the draggable, but don't move it
+          @$draggable.simulate 'mousedown'
+          @$draggable.simulate 'mouseup'
           @$draggable.simulate 'click'
 
         it 'should not call the stop callback', ->
