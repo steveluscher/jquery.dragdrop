@@ -26,6 +26,12 @@ jQuery ->
       # Applied when a draggable is in mid-drag
       draggingClass: 'ui-draggable-dragging'
 
+      # Helper options:
+      # * original: drag the actual element
+      # * clone: stick a copy of the element to the mouse
+      # * (element, e) ->: stick the return value of this function to the mouse
+      helper: 'original'
+
     # Memoize the config
     getConfig: -> @config ||= applyDefaults @options, @defaults
 
@@ -47,7 +53,7 @@ jQuery ->
 
     setupElement: ->
       # Position the draggable relative if it's currently statically positioned
-      @$element.css(position: 'relative') if @$element.css('position') is 'static'
+      @$element.css(position: 'relative') if @config.helper is 'original' and @$element.css('position') is 'static'
 
       # Done!
       @setupPerformed = true
@@ -59,15 +65,6 @@ jQuery ->
     handleElementMouseDown: (e) =>
       # Bail if this is not a valid handle
       return unless @isValidHandle(e.target)
-
-      # Store the start position of the draggable
-      for edge in ['top', 'left']
-        @elementStartPosition ||= {}
-        @elementStartPosition[edge] = parseInt(@$element.css edge)
-        @elementStartPosition[edge] = 0 if isNaN(@elementStartPosition[edge])
-
-      # Store the start offset of the draggable, with respect to the document
-      @elementStartOffset = @$element.offset()
 
       # Store the mousedown event that started this drag
       @mousedownEvent = e
@@ -86,8 +83,10 @@ jQuery ->
 
       # Clean up
       @dragStarted = false
-      @elementStartPosition = {}
-      @elementStartOffset = {}
+      @$helper = null
+      @helperStartPosition = {}
+      @elementStartDocumentOffset = {}
+      @helperStartDocumentOffset = {}
       delete @mousedownEvent
 
       unless shouldPermitClick
@@ -103,8 +102,14 @@ jQuery ->
 
       return unless @dragStarted
 
-      # Remove the dragging class
-      @$element.removeClass @getConfig().draggingClass
+      if @config.helper is 'clone'
+        # Destroy the helper
+        @$helper.remove()
+        # Trigger the click event on the original element
+        @$element.trigger('click', e)
+      else
+        # Remove the dragging class
+        @$helper.removeClass @getConfig().draggingClass
 
       # Trigger the stop event
       @handleDragStop(e)
@@ -127,7 +132,29 @@ jQuery ->
       # Call any user-supplied start callback
       @config.start?(e)
 
-      @$element
+      # Store the start offset of the draggable, with respect to the document
+      @elementStartDocumentOffset = @$element.offset()
+
+      # Configure the drag helper
+      @$helper =
+        switch @config.helper
+          when 'clone' then @synthesizeHelperByCloning @$element
+          else @$element # Use the element itself
+
+      if @isPositionedAbsoluteish(@$helper)
+        # Store the start offset of the helper, with respect to its offset parent
+        @helperStartPosition = @$helper.position()
+      else
+        # Store the start position of the helper with respect to itself
+        @helperStartPosition ||= {}
+        for edge in ['top', 'left']
+          @helperStartPosition[edge] = parseInt(@$helper.css edge)
+          @helperStartPosition[edge] = 0 if isNaN(@helperStartPosition[edge])
+
+      # Store the start offset of the helper, with respect to the document
+      @helperStartDocumentOffset = @$helper.offset()
+
+      @$helper
         # Apply the dragging class
         .addClass(@getConfig().draggingClass)
 
@@ -147,10 +174,10 @@ jQuery ->
         x: e.pageX - @mousedownEvent.pageX
         y: e.pageY - @mousedownEvent.pageY
 
-      # Move the element
-      @$element.css
-        left: parseInt(@elementStartPosition.left) + delta.x
-        top: parseInt(@elementStartPosition.top) + delta.y
+      # Move the helper
+      @$helper.css
+        left: parseInt(@helperStartPosition.left) + delta.x
+        top: parseInt(@helperStartPosition.top) + delta.y
 
     #
     # Validators
@@ -165,6 +192,32 @@ jQuery ->
       else
         # No handle was specified; anything is fair game
         true
+
+    isPositionedAbsoluteish: (element) -> /fixed|absolute/.test element.css('position')
+
+    #
+    # Helpers
+    #
+
+    synthesizeHelperByCloning: (element) ->
+      css = {}
+
+      # Position the helper absolutely, unless it already is-ish
+      css.position = 'absolute' unless @isPositionedAbsoluteish(element)
+
+      # Move the clone to the position of the original
+      css.top = @elementStartDocumentOffset.top
+      css.left = @elementStartDocumentOffset.left
+
+      element
+        # Clone the element
+        .clone()
+        # Remove the ID attribute from the clone
+        .removeAttr('id')
+        # Style the helper
+        .css(css)
+        # Attach it to the body
+        .appendTo('body')
 
   $.fn.draggable = (options) ->
     this.each ->
