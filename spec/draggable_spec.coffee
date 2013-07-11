@@ -355,6 +355,23 @@ describe 'Draggable', ->
             it 'should not receive the click event', ->
               expect('click').not.toHaveBeenTriggeredOn(@$draggable)
 
+          describe 'outside the browser window', ->
+
+            # Draggables don't receive the click event when they are released outside the browser window.
+
+            describe 'then having been dragged back to its initial position', ->
+
+              beforeEach ->
+                @$draggable.simulate 'drag',
+                  dx: -options.dragDistance
+                  dy: -options.dragDistance
+
+              it 'should find itself at its original top offset', ->
+                expect(@$draggable.offset().top).toBe(@originalOffset.top)
+
+              it 'should find itself at its original left offset', ->
+                expect(@$draggable.offset().left).toBe(@originalOffset.left)
+
     describe 'after having been dragged', ->
 
       beforeEach ->
