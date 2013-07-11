@@ -284,9 +284,6 @@ describe 'Draggable', ->
           # Spy on jQuery.remove()
           @remove = spyOn(jQuery.fn, 'remove').andCallThrough()
 
-          # Spy on clicks made on the draggable
-          spyOnEvent(@$draggable, 'click')
-
           # Drag the draggable a standard distance
           @$draggable.simulate 'drag',
             dx: options.dragDistance
@@ -297,9 +294,6 @@ describe 'Draggable', ->
 
           # What was removed?
           @removedElement = @remove.mostRecentCall.object
-
-        it 'should trigger the click event on the original element', ->
-          expect('click').toHaveBeenTriggeredOn(@$draggable)
 
         describe 'a clone of itself', ->
 
