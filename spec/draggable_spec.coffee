@@ -60,7 +60,10 @@ describe 'Draggable', ->
 
         beforeEach ->
           # Click the draggable, but don't move it
-          @$draggable.simulate 'click'
+          @$draggable
+            .simulate('mousedown')
+            .simulate('mouseup')
+            .simulate('click')
 
         it 'should not call the start callback', ->
           expect(@callback).not.toHaveBeenCalled()
@@ -110,9 +113,10 @@ describe 'Draggable', ->
 
         beforeEach ->
           # Click the draggable, but don't move it
-          @$draggable.simulate 'mousedown'
-          @$draggable.simulate 'mouseup'
-          @$draggable.simulate 'click'
+          @$draggable
+            .simulate('mousedown')
+            .simulate('mouseup')
+            .simulate('click')
 
         it 'should not call the stop callback', ->
           expect(@callback).not.toHaveBeenCalled()
