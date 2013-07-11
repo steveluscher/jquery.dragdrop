@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+
+  <title>jQuery DragDrop Examples</title>
+
+  <link rel="stylesheet" type="text/css" href="../spec/spec.css">
+
+  <script src="lib/coffee-script.js"></script>
+  <script src="../spec/lib/jquery.js"></script>
+  <script src="../dist/draggable.js"></script>
+
+  <script type="text/coffeescript" charset="utf-8">
+  jQuery ->
+    return window.alert('Before checking out these examples, you will need to build the project. See the README for instructions how.') unless jQuery.draggable
+
+    # Initialize the draggable
+    $('#draggable').draggable()
+
+    # Initialize the absolute draggable
+    $('#draggable.absolute').draggable()
+
+    # Initialize the fixed draggable
+    $('#draggable.fixed').draggable()
+
+    # Initialize the draggable with a handle
+    $('#draggable_with_handle').draggable(handle: '#handle')
+
+    # Initialize the draggable using clone
+    $('#draggable_clone').draggable(helper: 'clone')
+  </script>
+
+</head>
+
+<body>
+  <div id="draggable">
+    <p>
+      Drag me
+    </p>
+  </div>
+
+  <div id="draggable" class="absolute">
+    <p>
+      Drag me, absolutely
+    </p>
+  </div>
+
+  <div id="draggable" class="fixed">
+    <p>
+      Drag me, fixedly
+    </p>
+  </div>
+
+  <div id="draggable_with_handle">
+    Drag me
+    <a id="handle">
+      Using <em>this</em> handle
+    </a>
+  </div>
+
+  <div id="draggable_clone">
+    <p>
+      Drag my clone
+    </p>
+  </div>
+</body>
+</html>
