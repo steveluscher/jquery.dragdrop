@@ -120,6 +120,9 @@ jQuery ->
     handleElementMouseDown: (e) =>
       @cancelAnyScheduledDrag()
 
+      # Until told otherwise, the interaction started by this mousedown should not cancel any subsequent click event
+      @shouldCancelClick = false
+
       # Bail if this is not a valid handle
       return unless @isValidHandle(e.target)
 
@@ -135,18 +138,8 @@ jQuery ->
       false
 
     handleElementClick: (e) =>
-      # Clicks should be passed through if this interaction didn't result in a drag
-      shouldPermitClick = not @dragStarted
-
-      # Clean up
-      @dragStarted = false
-      @$helper = null
-      @helperStartPosition = {}
-      @elementStartDocumentOffset = {}
-      @helperStartDocumentOffset = {}
-      delete @mousedownEvent
-
-      unless shouldPermitClick
+      # Clicks should be cancelled if the last mousedown/mouseup interaction resulted in a drag
+      if @shouldCancelClick
         # Cancel the click
         e.stopImmediatePropagation()
         false
@@ -156,6 +149,9 @@ jQuery ->
       $(document).off
         mousemove: @handleMouseMove
         mouseup: @handleMouseUp
+
+      # Lest a click event follow this mouseup, decide whether it should be permitted or not
+      @shouldCancelClick = !!@dragStarted
 
       return unless @dragStarted
 
@@ -170,6 +166,9 @@ jQuery ->
 
       # Trigger the stop event
       @handleDragStop(e)
+
+      # Clean up
+      @cleanUp()
 
     handleDocumentMouseMove: (e) =>
       # Trigger the start event, once
@@ -292,6 +291,15 @@ jQuery ->
         .css(css)
         # Attach it to the body
         .appendTo('body')
+
+    cleanUp: ->
+      # Clean up
+      @dragStarted = false
+      @$helper = null
+      @helperStartPosition = {}
+      @elementStartDocumentOffset = {}
+      @helperStartDocumentOffset = {}
+      delete @mousedownEvent
 
   $.fn.draggable = (options) ->
     this.each ->
