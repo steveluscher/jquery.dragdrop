@@ -203,6 +203,21 @@ describe 'Draggable', ->
             expect(@end.top - @start.top).toBe(0)
             expect(@end.left - @start.left).toBe(0)
 
+        describe 'after having something other than its handle clicked without having been dragged', ->
+
+          beforeEach ->
+            # Spy on clicks made on the draggable
+            spyOnEvent(@$draggable, 'click')
+
+            # Click the draggable, but don't move it
+            @$draggable
+              .simulate('mousedown')
+              .simulate('mouseup')
+              .simulate('click')
+
+          it 'should receive the click event', ->
+            expect('click').toHaveBeenTriggeredOn(@$draggable)
+
   describe 'configured with a helper', ->
 
     describe 'such as the ‘clone’ helper', ->
