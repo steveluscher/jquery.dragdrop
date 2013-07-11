@@ -19,12 +19,6 @@ jQuery ->
     # requestAnimationFrame polyfill by Erik Möller. fixes from Paul Irish and Tino Zijdel
     # MIT license
     ->
-      if window.JQUERY_DRAGDROP_ENV_TEST
-        # In test mode, this polyfill plays havoc with the specs. Disable it
-        window.requestAnimationFrame = (c) -> c (new Date().getTime())
-        window.cancelAnimationFrame = (id) -> # noop
-        return
-
       lastTime = 0
       vendors = ["ms", "moz", "webkit", "o"]
       x = 0
