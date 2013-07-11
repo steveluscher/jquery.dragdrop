@@ -1,0 +1,1 @@
+window.JQUERY_DRAGDROP_ENV_TEST = true
