@@ -48,7 +48,10 @@ jQuery ->
 
       requestAnimationPolyfillImplemented = yes
 
+  #
   # Utility functions
+  #
+
   isNumber = (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
   isNaN = (obj) -> isNumber(obj) and window.isNaN(obj)
   applyDefaults = (obj, sources...) ->
@@ -59,6 +62,11 @@ jQuery ->
     obj
 
   $.draggable = class
+
+    #
+    # Config
+    #
+
     defaults:
       # Applied when the draggable is initialized
       draggableClass: 'ui-draggable'
@@ -74,6 +82,10 @@ jQuery ->
 
     # Memoize the config
     getConfig: -> @config ||= applyDefaults @options, @defaults
+
+    #
+    # Initialization
+    #
 
     constructor: (element, @options = {}) ->
       # Lazily implement a requestAnimationFrame polyfill
