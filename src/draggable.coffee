@@ -96,7 +96,7 @@ jQuery ->
 
     setupElement: ->
       # Position the draggable relative if it's currently statically positioned
-      @$element.css(position: 'relative') if @config.helper is 'original' and @$element.css('position') is 'static'
+      @$element.css(position: 'relative') if @getConfig().helper is 'original' and @$element.css('position') is 'static'
 
       # Done!
       @setupPerformed = true
@@ -147,7 +147,7 @@ jQuery ->
 
       return unless @dragStarted
 
-      if @config.helper is 'clone'
+      if @getConfig().helper is 'clone'
         # Destroy the helper
         @$helper.remove()
         # Trigger the click event on the original element
@@ -177,14 +177,14 @@ jQuery ->
       @setupElement() unless @setupPerformed
 
       # Call any user-supplied start callback
-      @config.start?(e)
+      @getConfig().start?(e)
 
       # Store the start offset of the draggable, with respect to the document
       @elementStartDocumentOffset = @$element.offset()
 
       # Configure the drag helper
       @$helper =
-        switch @config.helper
+        switch @getConfig().helper
           when 'clone' then @synthesizeHelperByCloning @$element
           else @$element # Use the element itself
 
@@ -212,7 +212,7 @@ jQuery ->
       @cancelAnyScheduledDrag()
 
       # Call any user-supplied stop callback
-      @config.stop?(e)
+      @getConfig().stop?(e)
 
     handleDrag: (e) ->
       @scheduleDrag =>
@@ -234,11 +234,11 @@ jQuery ->
     #
 
     isValidHandle: (element) ->
-      if @config.handle
+      if @getConfig().handle
         $element = $(element)
 
         # Is this element the handle itself, or a descendant of the handle?
-        !!$element.closest(@config.handle).length
+        !!$element.closest(@getConfig().handle).length
       else
         # No handle was specified; anything is fair game
         true
