@@ -306,12 +306,13 @@ describe 'Draggable', ->
     beforeEach ->
       loadFixtures 'draggable.html'
       @$draggable = $('#draggable').draggable()
+      @originalOffset = @$draggable.offset()
 
-    describe 'when mousedowned upon', ->
+    describe 'when mousedown’d upon', ->
 
       beforeEach ->
         spyOnEvent @$draggable, 'mousedown'
-        SpecHelper.mouseDownInCenterOf @$draggable
+        @center = SpecHelper.mouseDownInCenterOf @$draggable
 
       it 'should not possess the default dragging class', ->
         expect(@$draggable).not.toHaveClass $.draggable::defaults['draggingClass']
@@ -319,29 +320,40 @@ describe 'Draggable', ->
       it 'should capture the mousedown event', ->
         expect('mousedown').toHaveBeenPreventedOn(@$draggable)
 
-    describe 'when clicked without having been dragged', ->
+      describe 'then moved', ->
 
-      beforeEach ->
-        spyOnEvent @$draggable, 'click'
+        beforeEach ->
+          # Move it by the prescribed amount, without lifting the mouse button
+          $(document).simulate 'mousemove',
+            clientX: @center.x + options.dragDistance
+            clientY: @center.y + options.dragDistance
 
-        # Click the draggable, but don't move it
-        @$draggable.simulate 'click'
+        it 'should possess the default dragging class', ->
+          expect(@$draggable).toHaveClass $.draggable::defaults['draggingClass']
 
-      it 'should receive the click event', ->
-        expect('click').toHaveBeenTriggeredOn(@$draggable)
+        describe 'then having been released', ->
 
-    describe 'while in mid-drag', ->
+          beforeEach ->
+            spyOnEvent @$draggable, 'mouseup'
 
-      beforeEach ->
-        center = SpecHelper.mouseDownInCenterOf @$draggable
+            @$draggable.simulate 'mouseup',
+              clientX: @center.x + options.dragDistance
+              clientY: @center.y + options.dragDistance
 
-        # Move it by the prescribed amount, without lifting the mouse button
-        $(document).simulate 'mousemove',
-          clientX: center.x + options.dragDistance
-          clientY: center.y + options.dragDistance
+          describe 'inside the browser window', ->
 
-      it 'should possess the default dragging class', ->
-        expect(@$draggable).toHaveClass $.draggable::defaults['draggingClass']
+            beforeEach ->
+              spyOnEvent @$draggable, 'click'
+
+              @$draggable.simulate 'click',
+                clientX: @center.x + options.dragDistance
+                clientY: @center.y + options.dragDistance
+
+            it 'should not possess the default dragging class', ->
+              expect(@$draggable).not.toHaveClass $.draggable::defaults['draggingClass']
+
+            it 'should not receive the click event', ->
+              expect('click').not.toHaveBeenTriggeredOn(@$draggable)
 
     describe 'after having been dragged', ->
 
