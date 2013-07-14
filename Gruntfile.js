@@ -23,13 +23,9 @@ module.exports = function(grunt) {
     },
     coffee: {
       plugin: {
-        files: [{
-          expand: true,
-          cwd: 'src/',
-          src: '*.coffee',
-          dest: 'dist/',
-          ext: '.js'
-        }]
+        files: {
+          'dist/draggable.js': ['src/base.coffee', 'src/draggable.coffee'],
+        }
       },
       specs: {
         files: [{
