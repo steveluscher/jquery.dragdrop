@@ -29,6 +29,12 @@
 
     # Initialize the draggable using clone
     $('#draggable_clone').draggable(helper: 'clone')
+
+    # Initialize the draggable using a helper factory
+    $('#draggable_helper_factory').draggable(helper: (element, e) -> $('<div>').html("<p>I was built in a factory</p>"))
+
+    # Initialize the draggable using a broken helper factory
+    $('#draggable_helper_factory_broken').draggable(helper: (element, e) -> 'Nothing that quacks like a DOM element')
   </script>
 
 </head>
@@ -62,6 +68,18 @@
   <div id="draggable_clone">
     <p>
       Drag my clone
+    </p>
+  </div>
+
+  <div id="draggable_helper_factory">
+    <p>
+      Drag my factory-built helper
+    </p>
+  </div>
+
+  <div id="draggable_helper_factory_broken">
+    <p>
+      Drag my broken factory-built helper (exception will be thrown)
     </p>
   </div>
 </body>

@@ -71,7 +71,7 @@ jQuery ->
       # Helper options:
       # * original: drag the actual element
       # * clone: stick a copy of the element to the mouse
-      # * (element, e) ->: stick the return value of this function to the mouse
+      # * (element, e) ->: stick the return value of this function to the mouse; must return something that produces a DOM element when run through jQuery
       helper: 'original'
 
     # Memoize the config
@@ -149,14 +149,14 @@ jQuery ->
 
       return unless @dragStarted
 
-      if @getConfig().helper is 'clone'
+      if @getConfig().helper is 'original'
+        # Remove the dragging class
+        @$helper.removeClass @getConfig().draggingClass
+      else
         # Destroy the helper
         @$helper.remove()
         # Trigger the click event on the original element
         @$element.trigger('click', e)
-      else
-        # Remove the dragging class
-        @$helper.removeClass @getConfig().draggingClass
 
       # Trigger the stop event
       @handleDragStop(e)
@@ -188,10 +188,11 @@ jQuery ->
       @elementStartDocumentOffset = @$element.offset()
 
       # Configure the drag helper
+      helperConfig = @getConfig().helper
       @$helper =
-        switch @getConfig().helper
-          when 'clone' then @synthesizeHelperByCloning @$element
-          else @$element # Use the element itself
+        if helperConfig is 'clone' then @synthesizeHelperByCloning @$element
+        else if typeof helperConfig is 'function' then @synthesizeHelperUsingFactory helperConfig, e
+        else @$element # Use the element itself
 
       if @isPositionedAbsoluteish(@$helper)
         # Store the start offset of the helper, with respect to its offset parent
@@ -267,21 +268,38 @@ jQuery ->
         @scheduledDragId = null
 
     synthesizeHelperByCloning: (element) ->
+      # Clone the original element
+      helper = element.clone()
+
+      # Post process the helper element
+      @prepareHelper helper
+
+    synthesizeHelperUsingFactory: (factory, e) ->
+      # Run the factory
+      output = factory @$element.get(0), e
+
+      # Process the output with jQuery
+      helper = $(output).first()
+
+      throw new Error '[jQuery DragDrop – Draggable] Helper factory methods must produce a jQuery object, a DOM Element, or a string of HTML' unless helper.length
+
+      # Post process the helper element
+      @prepareHelper helper.first()
+
+    prepareHelper: (helper) ->
       css = {}
 
       # Position the helper absolutely, unless it already is-ish
-      css.position = 'absolute' unless @isPositionedAbsoluteish(element)
+      css.position = 'absolute' unless @isPositionedAbsoluteish(helper)
 
       # Move the clone to the position of the original
       css.top = @elementStartDocumentOffset.top
       css.left = @elementStartDocumentOffset.left
 
-      element
-        # Clone the element
-        .clone()
-        # Remove the ID attribute from the clone
+      helper
+        # Remove the ID attribute
         .removeAttr('id')
-        # Style the helper
+        # Style it
         .css(css)
         # Attach it to the body
         .appendTo('body')

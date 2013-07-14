@@ -7,6 +7,9 @@ describe 'Draggable', ->
       'selector': -> '#handle'
       'DOM element': -> $('#handle').get(0)
       'jQuery object': -> $('#handle')
+    helperConfigVariants:
+      'clone': 'clone'
+      'a factory method that produces something DOM-element-like': jasmine.createSpy('helperFactory').andReturn($('<div>').text('I’m a helper'))
 
   describe 'configured using the default options', ->
 
@@ -220,86 +223,119 @@ describe 'Draggable', ->
 
   describe 'configured with a helper', ->
 
-    describe 'such as the ‘clone’ helper', ->
+    describe 'such as a factory method that doesn’t produce anything DOM-element-like', ->
 
       beforeEach ->
         loadFixtures 'draggable.html'
-        @$draggable = $('#draggable').draggable(helper: 'clone')
+        @$draggable = $('#draggable').draggable(helper: -> 'Nothing that quacks like a DOM element')
 
-      describe 'while in mid-drag', ->
-
-        beforeEach ->
-          # Spy on jQuery.append()
-          @append = spyOn(jQuery.fn, 'append').andCallThrough()
-
-          # Record the start position of the draggable
-          @originalOffset = @$draggable.offset()
-
-          center = SpecHelper.mouseDownInCenterOf @$draggable
-
-          # Move it by the prescribed amount, without lifting the mouse button
-          $(document).simulate 'mousemove',
-            clientX: center.x + options.dragDistance
-            clientY: center.y + options.dragDistance
-
-          # What was appended?
-          @appendedElement = $(@append.mostRecentCall.args?[0])
-          @appendedElementHTML = @appendedElement.get(0)?.outerHTML
-
-          # To what?
-          @appendReceiver = @append.mostRecentCall.object
-
-        it 'should not possess the default dragging class', ->
-          expect(@$draggable).not.toHaveClass $.draggable::defaults['draggingClass']
-
-        describe 'a clone of itself', ->
-
-          it 'should contain a copy of the original element‘s contents', ->
-            expect(@appendedElement.html()).toBe(@$draggable.clone().html())
-
-          it 'should be positioned absolutely', ->
-            expect(@appendedElement).toHaveCss { position: 'absolute' }
-
-          it 'should have no id', ->
-            expect(@appendedElement).not.toHaveAttr('id')
-
-          it 'should have been appended to the body', ->
-            expect(@appendReceiver).toBe('body')
-
-          it 'should possess the default dragging class', ->
-            expect(@appendedElement).toHaveClass $.draggable::defaults['draggingClass']
-
-          it 'should find itself the drag distance from the draggable‘s original top offset', ->
-            expect(@appendedElement.offset().top).toBe(@originalOffset.top + options.dragDistance)
-
-          it 'should find itself the drag distance from the draggable‘s original left offset', ->
-            expect(@appendedElement.offset().left).toBe(@originalOffset.left + options.dragDistance)
-
-      describe 'after having been dragged', ->
+      describe 'when dragged', ->
 
         beforeEach ->
-          # Spy on jQuery.append()
-          @append = spyOn(jQuery.fn, 'append').andCallThrough()
-
-          # Spy on jQuery.remove()
-          @remove = spyOn(jQuery.fn, 'remove').andCallThrough()
-
           # Drag the draggable a standard distance
           @$draggable.simulate 'drag',
+            moves: 1
             dx: options.dragDistance
             dy: options.dragDistance
 
-          # What was appended?
-          @appendedElement = $(@append.mostRecentCall.args?[0])
+        # TODO: Figure out how to catch this exception using Jasmine
+        # it 'should result in an exception', ->
+          # Error: [jQuery DragDrop – Draggable] Helper factory methods must produce a jQuery object, a DOM Element, or a string of HTML
 
-          # What was removed?
-          @removedElement = @remove.mostRecentCall.object
+    for variant, helperConfig of options.helperConfigVariants
+      do (variant, helperConfig) ->
 
-        describe 'a clone of itself', ->
+        describe "such as #{variant}", ->
 
-          it 'should have been removed', ->
-            expect(@remove).toHaveBeenCalled()
-            expect(@removedElement).toBe(@appendedElement)
+          beforeEach ->
+            loadFixtures 'draggable.html'
+            @$draggable = $('#draggable').draggable(helper: helperConfig)
+
+          describe 'while in mid-drag', ->
+
+            beforeEach ->
+              # Spy on jQuery.append()
+              @append = spyOn(jQuery.fn, 'append').andCallThrough()
+
+              # Record the start position of the draggable
+              @originalOffset = @$draggable.offset()
+
+              center = SpecHelper.mouseDownInCenterOf @$draggable
+
+              # Move it by the prescribed amount, without lifting the mouse button
+              $(document).simulate 'mousemove',
+                clientX: center.x + options.dragDistance
+                clientY: center.y + options.dragDistance
+
+              # What was appended?
+              @appendedElement = $(@append.mostRecentCall.args?[0])
+              @appendedElementHTML = @appendedElement.get(0)?.outerHTML
+
+              # To what?
+              @appendReceiver = @append.mostRecentCall.object
+
+            it 'should not possess the default dragging class', ->
+              expect(@$draggable).not.toHaveClass $.draggable::defaults['draggingClass']
+
+            if typeof helperConfig is 'function'
+              describe 'the helper-factory function', ->
+                it 'should be called with the draggable and the event as arguments', ->
+                  expect(helperConfig).toHaveBeenCalledWith(@$draggable.get(0), jasmine.any(jQuery.Event))
+
+            describe 'the helper', =>
+
+              it 'should be positioned absolutely', ->
+                expect(@appendedElement).toHaveCss { position: 'absolute' }
+
+              it 'should have no id', ->
+                expect(@appendedElement).not.toHaveAttr('id')
+
+              it 'should have been appended to the body', ->
+                expect(@appendReceiver).toBe('body')
+
+              it 'should possess the default dragging class', ->
+                expect(@appendedElement).toHaveClass $.draggable::defaults['draggingClass']
+
+              it 'should find itself the drag distance from the draggable‘s original top offset', ->
+                expect(@appendedElement.offset().top).toBe(@originalOffset.top + options.dragDistance)
+
+              it 'should find itself the drag distance from the draggable‘s original left offset', ->
+                expect(@appendedElement.offset().left).toBe(@originalOffset.left + options.dragDistance)
+
+              if helperConfig is 'clone'
+                it 'should contain a copy of the original element‘s contents', ->
+                  expect(@appendedElement.html()).toBe(@$draggable.clone().html())
+
+              if typeof helperConfig is 'function'
+                it 'should contain the output of the helper factory', ->
+                  factoryOutput = helperConfig(@$draggable.get(0), jQuery.simulate::mouseEvent('mousemove'))
+                  expect(@appendedElement.html()).toBe(factoryOutput.html())
+
+          describe 'after having been dragged', ->
+
+            beforeEach ->
+              # Spy on jQuery.append()
+              @append = spyOn(jQuery.fn, 'append').andCallThrough()
+
+              # Spy on jQuery.remove()
+              @remove = spyOn(jQuery.fn, 'remove').andCallThrough()
+
+              # Drag the draggable a standard distance
+              @$draggable.simulate 'drag',
+                dx: options.dragDistance
+                dy: options.dragDistance
+
+              # What was appended?
+              @appendedElement = $(@append.mostRecentCall.args?[0])
+
+              # What was removed?
+              @removedElement = @remove.mostRecentCall.object
+
+            describe 'the helper', ->
+
+              it 'should have been removed', ->
+                expect(@remove).toHaveBeenCalled()
+                expect(@removedElement).toBe(@appendedElement)
 
   describe 'any draggable', ->
 
