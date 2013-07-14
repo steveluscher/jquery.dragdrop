@@ -1,5 +1,5 @@
 #
-# Name      : jquery.dragdrop
+# Name      : jQuery DragDrop Draggable
 # Author    : Steven Luscher, https://twitter.com/steveluscher
 # Version   : 0.0.1-dev
 # Repo      : https://github.com/steveluscher/jquery.dragdrop

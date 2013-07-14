@@ -25,6 +25,7 @@ module.exports = function(grunt) {
       plugin: {
         files: {
           'dist/draggable.js': ['src/base.coffee', 'src/draggable.coffee'],
+          'dist/droppable.js': ['src/base.coffee', 'src/droppable.coffee']
         }
       },
       specs: {

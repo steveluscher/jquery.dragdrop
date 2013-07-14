@@ -10,10 +10,11 @@
   <script src="lib/coffee-script.js"></script>
   <script src="../spec/lib/jquery.js"></script>
   <script src="../dist/draggable.js"></script>
+  <script src="../dist/droppable.js"></script>
 
   <script type="text/coffeescript" charset="utf-8">
   jQuery ->
-    return window.alert('Before checking out these examples, you will need to build the project. See the README for instructions how.') unless jQuery.draggable
+    return window.alert('Before checking out these examples, you will need to build the project. See the README for instructions how.') unless jQuery.draggable and jQuery.droppable
 
     # Initialize the draggable
     $('#draggable').draggable()
@@ -35,6 +36,9 @@
 
     # Initialize the draggable using a broken helper factory
     $('#draggable_helper_factory_broken').draggable(helper: (element, e) -> 'Nothing that quacks like a DOM element')
+
+    # Initialize the droppable
+    $('#droppable').droppable()
   </script>
 
 </head>
@@ -80,6 +84,12 @@
   <div id="draggable_helper_factory_broken">
     <p>
       Drag my broken factory-built helper (exception will be thrown)
+    </p>
+  </div>
+
+  <div id="droppable">
+    <p>
+      Drop here
     </p>
   </div>
 </body>

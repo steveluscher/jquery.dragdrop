@@ -20,3 +20,20 @@
 .ui-draggable-dragging {
   background-color: green;
 }
+
+#droppable {
+  position: absolute;
+  top: 150px;
+  right: 250px;
+  width: 100px;
+  height: 100px;
+
+  box-sizing: padding-box;
+}
+
+.ui-droppable {
+  background-color: lightblue;
+}
+.ui-droppable-hovered {
+  background-color: blue;
+}
