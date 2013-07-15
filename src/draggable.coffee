@@ -118,12 +118,12 @@ jQuery ->
       # Stop the mousedown event
       false
 
-    handleElementClick: (e) =>
-      # Clicks should be cancelled if the last mousedown/mouseup interaction resulted in a drag
-      if @shouldCancelClick
-        # Cancel the click
-        e.stopImmediatePropagation()
-        false
+    handleDocumentMouseMove: (e) =>
+      # Trigger the start event, once
+      @handleDragStart(e) unless @dragStarted
+
+      # Trigger the drag event
+      @handleDrag(e)
 
     handleDocumentMouseUp: (e) =>
       # Stop listening for mouse events on the document
@@ -151,12 +151,12 @@ jQuery ->
       # Clean up
       @cleanUp()
 
-    handleDocumentMouseMove: (e) =>
-      # Trigger the start event, once
-      @handleDragStart(e) unless @dragStarted
-
-      # Trigger the drag event
-      @handleDrag(e)
+    handleElementClick: (e) =>
+      # Clicks should be cancelled if the last mousedown/mouseup interaction resulted in a drag
+      if @shouldCancelClick
+        # Cancel the click
+        e.stopImmediatePropagation()
+        false
 
     #
     # Draggable events
@@ -201,12 +201,6 @@ jQuery ->
       # Mark the drag as having started
       @dragStarted = true
 
-    handleDragStop: (e) ->
-      @cancelAnyScheduledDrag()
-
-      # Call any user-supplied stop callback
-      @getConfig().stop?(e)
-
     handleDrag: (e) ->
       @scheduleDrag =>
         # Call any user-supplied drag callback
@@ -221,6 +215,12 @@ jQuery ->
         @$helper.css
           left: parseInt(@helperStartPosition .left) + delta.x
           top: parseInt(@helperStartPosition .top) + delta.y
+
+    handleDragStop: (e) ->
+      @cancelAnyScheduledDrag()
+
+      # Call any user-supplied stop callback
+      @getConfig().stop?(e)
 
     #
     # Validators
