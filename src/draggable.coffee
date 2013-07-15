@@ -90,6 +90,9 @@ jQuery ->
       # Position the draggable relative if it's currently statically positioned
       @$element.css(position: 'relative') if @getConfig().helper is 'original' and @$element.css('position') is 'static'
 
+      # Save the original value of the pointer-events CSS property
+      @originalPointerEventsPropertyValue = @$element.css('pointerEvents')
+
       # Done!
       @setupPerformed = true
 
@@ -196,6 +199,8 @@ jQuery ->
       @$helper
         # Apply the dragging class
         .addClass(@getConfig().draggingClass)
+        # Kill pointer events while in mid-drag
+        .css(pointerEvents: 'none')
 
       # Mark the drag as having started
       @dragStarted = true
@@ -217,6 +222,9 @@ jQuery ->
 
     handleDragStop: (e) ->
       @cancelAnyScheduledDrag()
+
+      # Restore the original value of the pointer-events property
+      @$element.css(pointerEvents: @originalPointerEventsPropertyValue)
 
       # Call any user-supplied stop callback
       @getConfig().stop?(e)
