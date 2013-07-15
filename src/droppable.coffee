@@ -21,9 +21,6 @@ jQuery ->
       # Applied when a draggable is hovering over this droppable
       hoverClass: 'ui-droppable-hovered'
 
-    # Memoize the config
-    getConfig: -> @config ||= @applyDefaults @options, @defaults
-
     #
     # Initialization
     #

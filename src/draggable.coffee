@@ -61,9 +61,6 @@ jQuery ->
       # * (element, e) ->: stick the return value of this function to the mouse; must return something that produces a DOM element when run through jQuery
       helper: 'original'
 
-    # Memoize the config
-    getConfig: -> @config ||= @applyDefaults @options, @defaults
-
     #
     # Initialization
     #
