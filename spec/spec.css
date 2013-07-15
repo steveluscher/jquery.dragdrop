@@ -20,6 +20,9 @@
 .ui-draggable-dragging {
   background-color: green;
 }
+.ui-draggable, .ui-draggable-dragging {
+  z-index: 20;
+}
 
 #droppable {
   position: absolute;
@@ -33,6 +36,7 @@
 
 .ui-droppable {
   background-color: lightblue;
+  z-index: 10;
 }
 .ui-droppable-hovered {
   background-color: blue;
