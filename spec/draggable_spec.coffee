@@ -1,4 +1,4 @@
-describe 'Draggable', ->
+describe 'A draggable', ->
   options =
     dragDistance: 50
     alternateDraggableClass: 'alternateDraggableClass'
@@ -337,7 +337,7 @@ describe 'Draggable', ->
                 expect(@remove).toHaveBeenCalled()
                 expect(@removedElement).toBe(@appendedElement)
 
-  describe 'any draggable', ->
+  describe 'of any sort', ->
 
     beforeEach ->
       loadFixtures 'draggable.html'
@@ -424,7 +424,7 @@ describe 'Draggable', ->
       it 'should not receive the click event', ->
         expect('click').not.toHaveBeenTriggeredOn(@$draggable)
 
-  describe 'a statically positioned draggable', ->
+  describe 'of the statically positioned sort', ->
 
     beforeEach ->
       loadFixtures 'draggable.html'
@@ -471,7 +471,7 @@ describe 'Draggable', ->
       it 'should find itself the drag distance from its original left offset', ->
         expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
-  describe 'an absolutely positioned draggable', ->
+  describe 'of the absolutely positioned sort', ->
 
     beforeEach ->
       loadFixtures 'draggable_absolute.html'
@@ -518,7 +518,7 @@ describe 'Draggable', ->
       it 'should find itself the drag distance from its original left offset', ->
         expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
-  describe 'a fixed positioned draggable', ->
+  describe 'of the fixedly positioned sort', ->
 
     beforeEach ->
       loadFixtures 'draggable_fixed.html'

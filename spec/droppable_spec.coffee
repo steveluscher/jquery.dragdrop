@@ -1,4 +1,4 @@
-describe 'Droppable', ->
+describe 'A droppable', ->
   options =
     alternateDroppableClass: 'alternateDroppableClass'
 
