@@ -8,7 +8,7 @@
 
 jQuery ->
 
-  $.droppable = class
+  $.droppable = class extends jQuery.dragdrop
 
     #
     # Config
@@ -22,7 +22,7 @@ jQuery ->
       hoverClass: 'ui-droppable-hovered'
 
     # Memoize the config
-    getConfig: -> @config ||= jQuery.dragdrop.applyDefaults @options, @defaults
+    getConfig: -> @config ||= @applyDefaults @options, @defaults
 
     #
     # Initialization
