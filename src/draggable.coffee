@@ -205,6 +205,9 @@ jQuery ->
       # Mark the drag as having started
       @dragStarted = true
 
+      # Broadcast to interested subscribers that this droppable is now in the air
+      @broadcast('start', e)
+
     handleDrag: (e) ->
       @scheduleDrag =>
         # Call any user-supplied drag callback
@@ -229,6 +232,9 @@ jQuery ->
       # Call any user-supplied stop callback
       @getConfig().stop?(e)
 
+      # Broadcast to interested subscribers that this droppable has been dropped
+      @broadcast('stop', e)
+
     #
     # Validators
     #
@@ -248,6 +254,16 @@ jQuery ->
     #
     # Helpers
     #
+
+    broadcast: (type, originalEvent) ->
+      # Synthesize a new event with this type
+      event = new jQuery.Event(type)
+
+      # Attach the original mouse event to it
+      event.originalEvent = originalEvent
+
+      # Broadcast!
+      $(jQuery.draggable::).trigger(event, @)
 
     cancelAnyScheduledDrag: ->
       return unless @scheduledDragId
