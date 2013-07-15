@@ -8,7 +8,7 @@
 
 jQuery ->
 
-  $.draggable = class extends jQuery.dragdrop
+  class jQuery.draggable extends jQuery.dragdrop
 
     #
     # requestAnimationFrame polyfill
@@ -69,6 +69,8 @@ jQuery ->
     #
 
     constructor: (element, @options = {}) ->
+      super
+
       # Lazily implement a requestAnimationFrame polyfill
       implementRequestAnimationFramePolyfill()
 

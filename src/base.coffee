@@ -1,4 +1,5 @@
-jQuery.dragdrop = class
+return if jQuery.dragdrop?
+class jQuery.dragdrop
 
   #
   # Utility functions

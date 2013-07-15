@@ -8,7 +8,7 @@
 
 jQuery ->
 
-  $.droppable = class extends jQuery.dragdrop
+  class jQuery.droppable extends jQuery.dragdrop
 
     #
     # Config
@@ -29,6 +29,8 @@ jQuery ->
     #
 
     constructor: (element, @options = {}) ->
+      super
+
       # jQuery version of DOM element attached to the plugin
       @$element = $ element
 
