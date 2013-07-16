@@ -1,24 +1,24 @@
 /*global module:false*/
 module.exports = function(grunt) {
+  var getBanner = function(module) {
+    return '/*! <%= pkg.title || pkg.name %> ' + module + ' - v<%= pkg.version %> - ' +
+           '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
+           '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
+           '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= _(pkg.authors).pluck("name").join(", ") %>;' +
+           ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n'
+  };
+
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     uglify: {
-      plugin: {
-        files: [{
-          expand: true,
-          cwd: 'dist/',
-          src: '*.js',
-          dest: 'dist/',
-          ext: '.min.js'
-        }],
-        options: {
-          banner : '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' +
-            '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
-            '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' +
-            '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= _(pkg.authors).pluck("name").join(", ") %>;' +
-            ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n'
-        }
+      draggablePlugin: {
+        files: { 'dist/draggable.min.js': 'dist/draggable.js' },
+        options: { banner: getBanner('Draggable') }
+      },
+      droppablePlugin: {
+        files: { 'dist/droppable.min.js': 'dist/droppable.js' },
+        options: { banner: getBanner('Droppable') }
       }
     },
     coffee: {
