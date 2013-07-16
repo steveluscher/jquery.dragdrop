@@ -42,7 +42,7 @@ https://github.com/steveluscher/jquery.dragdrop
 
 ## Bug tracker
 
-If you find a bug or have a suggestion, please raise it the [issue here](https://github.com/steveluscher/jquery.dragdop/issues) on Github!
+If you find a bug or have a suggestion, please [raise the issue here](https://github.com/steveluscher/jquery.dragdop/issues) on Github!
 
 ## Documentation
 
