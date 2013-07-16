@@ -84,6 +84,9 @@ jQuery ->
         # Trigger the out handler
         @handleOut(e.originalEvent)
 
+        # Trigger the drop handler
+        @handleDrop(draggable, e.originalEvent)
+
       # Stop watching for the draggable to be dropped
       $(jQuery.draggable::).off
         stop: @handleDraggableStop
@@ -108,6 +111,9 @@ jQuery ->
       # Mark this droppable as being the drop target
       @isDropTarget = true
 
+      # Call any user-supplied over callback
+      @getConfig().over?(e)
+
     handleOut: (e) =>
       return unless @dragStarted
 
@@ -117,6 +123,13 @@ jQuery ->
 
       # Unmark this droppable as being the drop target
       @isDropTarget = false
+
+      # Call any user-supplied out callback
+      @getConfig().out?(e)
+
+    handleDrop: (draggable, e) =>
+      # Call any user-supplied drop callback
+      @getConfig().drop?(e)
 
     #
     # Helpers

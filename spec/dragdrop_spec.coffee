@@ -55,3 +55,117 @@ describe 'A droppable', ->
 
       it 'should possess the supplied hover class', ->
         expect(@$droppable).toHaveClass options.alternateHoverClass
+
+  describe 'configured with callbacks', ->
+
+    beforeEach ->
+      @callback = jasmine.createSpy('callback')
+
+    describe 'such as an over callback', ->
+
+      beforeEach ->
+        loadFixtures 'droppable.html'
+        @$droppable = $('#droppable').droppable(over: @callback)
+
+      describe 'having had a draggable come to hover above it', ->
+
+        beforeEach ->
+          appendLoadFixtures 'draggable.html'
+          @$draggable = $('#draggable').draggable()
+
+          # Find the center of the elements
+          draggableCenter = SpecHelper.findCenterOf @$draggable
+          droppableCenter = SpecHelper.findCenterOf @$droppable
+
+          # Drag the draggable over top of the droppable
+          @$draggable.simulate 'mousedown',
+            clientX: draggableCenter.x
+            clientY: draggableCenter.y
+          $(document).simulate 'mousemove',
+            clientX: droppableCenter.x
+            clientY: droppableCenter.y
+
+        it 'should call the over callback once', ->
+          expect(@callback.callCount).toBe(1)
+
+        it 'should call the over callback with the jQuery mouse event as the first parameter', ->
+          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+
+    describe 'such as an out callback', ->
+
+      beforeEach ->
+        loadFixtures 'droppable.html'
+        @$droppable = $('#droppable').droppable(out: @callback)
+
+      describe 'having had a draggable come to hover above it', ->
+
+        beforeEach ->
+          appendLoadFixtures 'draggable.html'
+          @$draggable = $('#draggable').draggable()
+
+          # Find the center of the elements
+          draggableCenter = SpecHelper.findCenterOf @$draggable
+          droppableCenter = SpecHelper.findCenterOf @$droppable
+
+          # Drag the draggable over top of the droppable
+          @$draggable.simulate 'mousedown',
+            clientX: draggableCenter.x
+            clientY: draggableCenter.y
+          $(document).simulate 'mousemove',
+            clientX: droppableCenter.x
+            clientY: droppableCenter.y
+
+        describe 'then having had that draggable leave its bounds', ->
+
+          beforeEach ->
+            droppableTopCorner = @$droppable.offset()
+
+            # Move the mouse back in the next run loop
+            $(document).simulate 'mousemove',
+              clientX: droppableTopCorner.left - 1
+              clientY: droppableTopCorner.top - 1
+            @$droppable.simulate 'mouseout',
+              clientX: droppableTopCorner.left - 1
+              clientY: droppableTopCorner.top - 1
+
+          it 'should call the out callback once', ->
+            expect(@callback.callCount).toBe(1)
+
+          it 'should call the out callback with the jQuery mouse event as the first parameter', ->
+            expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+
+    describe 'such as a drop callback', ->
+
+      beforeEach ->
+        loadFixtures 'droppable.html'
+        @$droppable = $('#droppable').droppable(drop: @callback)
+
+      describe 'having had a draggable dropped on it', ->
+
+        beforeEach ->
+          appendLoadFixtures 'draggable.html'
+          @$draggable = $('#draggable').draggable()
+
+          # Find the center of the elements
+          draggableCenter = SpecHelper.findCenterOf @$draggable
+          droppableCenter = SpecHelper.findCenterOf @$droppable
+
+          # Drop the draggable on the droppable
+          @$draggable.simulate 'mousedown',
+            clientX: draggableCenter.x
+            clientY: draggableCenter.y
+          $(document).simulate 'mousemove',
+            clientX: droppableCenter.x
+            clientY: droppableCenter.y
+          @$draggable.simulate 'mouseup',
+            clientX: droppableCenter.x
+            clientY: droppableCenter.y
+          @$draggable.simulate 'click',
+            clientX: droppableCenter.x
+            clientY: droppableCenter.y
+
+        it 'should call the drop callback once', ->
+          expect(@callback.callCount).toBe(1)
+
+        it 'should call the drop callback with the jQuery mouse event as the first parameter', ->
+          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
