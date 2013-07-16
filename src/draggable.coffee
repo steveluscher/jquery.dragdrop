@@ -220,8 +220,8 @@ jQuery ->
 
         # Move the helper
         @$helper.css
-          left: parseInt(@helperStartPosition .left) + delta.x
-          top: parseInt(@helperStartPosition .top) + delta.y
+          left: parseInt(@helperStartPosition.left) + delta.x
+          top: parseInt(@helperStartPosition.top) + delta.y
 
     handleDragStop: (e) ->
       @cancelAnyScheduledDrag()
