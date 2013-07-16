@@ -28,6 +28,8 @@ jQuery ->
     constructor: (element, @options = {}) ->
       super
 
+      throw new Error '[jQuery DragDrop – Droppable] Missing dependency jQuery Draggable' unless jQuery.draggable?
+
       # jQuery version of DOM element attached to the plugin
       @$element = $ element
 
