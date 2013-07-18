@@ -11,8 +11,8 @@ describe 'A droppable', ->
     describe 'with a draggable hovering above it', ->
 
       beforeEach ->
-        appendLoadFixtures 'draggable.html'
-        @$draggable = $('#draggable').draggable()
+        appendLoadFixtures 'draggable_static.html'
+        @$draggable = $('#draggable_static').draggable()
 
         # Find the center of the elements
         draggableCenter = SpecHelper.findCenterOf @$draggable
@@ -38,8 +38,8 @@ describe 'A droppable', ->
     describe 'with a draggable hovering above it', ->
 
       beforeEach ->
-        appendLoadFixtures 'draggable.html'
-        @$draggable = $('#draggable').draggable()
+        appendLoadFixtures 'draggable_static.html'
+        @$draggable = $('#draggable_static').draggable()
 
         # Find the center of the elements
         draggableCenter = SpecHelper.findCenterOf @$draggable
@@ -70,8 +70,8 @@ describe 'A droppable', ->
       describe 'having had a draggable come to hover above it', ->
 
         beforeEach ->
-          appendLoadFixtures 'draggable.html'
-          @$draggable = $('#draggable').draggable()
+          appendLoadFixtures 'draggable_static.html'
+          @$draggable = $('#draggable_static').draggable()
 
           # Find the center of the elements
           draggableCenter = SpecHelper.findCenterOf @$draggable
@@ -100,8 +100,8 @@ describe 'A droppable', ->
       describe 'having had a draggable come to hover above it', ->
 
         beforeEach ->
-          appendLoadFixtures 'draggable.html'
-          @$draggable = $('#draggable').draggable()
+          appendLoadFixtures 'draggable_static.html'
+          @$draggable = $('#draggable_static').draggable()
 
           # Find the center of the elements
           draggableCenter = SpecHelper.findCenterOf @$draggable
@@ -143,8 +143,8 @@ describe 'A droppable', ->
       describe 'having had a draggable dropped on it', ->
 
         beforeEach ->
-          appendLoadFixtures 'draggable.html'
-          @$draggable = $('#draggable').draggable()
+          appendLoadFixtures 'draggable_static.html'
+          @$draggable = $('#draggable_static').draggable()
 
           # Find the center of the elements
           draggableCenter = SpecHelper.findCenterOf @$draggable

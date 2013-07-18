@@ -10,6 +10,11 @@ jQuery ->
 
   class jQuery.draggable extends jQuery.dragdrop
 
+    vendors = ["ms", "moz", "webkit", "o"]
+    getCamelizedVendor = (vendor) ->
+      if vendor is 'webkit' then 'WebKit'
+      else vendor.charAt(0).toUpperCase() + vendor.slice(1)
+
     #
     # requestAnimationFrame polyfill
     #
@@ -21,13 +26,12 @@ jQuery ->
       # MIT license
       ->
         lastTime = 0
-        vendors = ["ms", "moz", "webkit", "o"]
-        x = 0
 
-        while x < vendors.length and not window.requestAnimationFrame
-          window.requestAnimationFrame = window[vendors[x] + "RequestAnimationFrame"]
-          window.cancelAnimationFrame = window[vendors[x] + "CancelAnimationFrame"] or window[vendors[x] + "CancelRequestAnimationFrame"]
-          ++x
+        for vendor in vendors
+          window.requestAnimationFrame ||= window[vendor + "RequestAnimationFrame"]
+          window.cancelAnimationFrame ||= window[vendor + "CancelAnimationFrame"] or window[vendor + "CancelRequestAnimationFrame"]
+          break if window.requestAnimationFrame and window.cancelAnimationFrame
+
         unless window.requestAnimationFrame
           window.requestAnimationFrame = (callback, element) ->
             currTime = new Date().getTime()
@@ -37,12 +41,38 @@ jQuery ->
             , timeToCall)
             lastTime = currTime + timeToCall
             id
+
         unless window.cancelAnimationFrame
           window.cancelAnimationFrame = (id) ->
             clearTimeout id
 
         # Prevent this function from running again
         implementRequestAnimationFramePolyfill = -> # noop
+
+    #
+    # convertPoint polyfill
+    #
+
+    implementConvertPointPolyfill = ->
+
+      for vendor in vendors
+        window.convertPointFromPageToNode ||= window[vendor + "ConvertPointFromPageToNode"]
+        window.convertPointFromNodeToPage ||= window[vendor + "ConvertPointFromNodeToPage"]
+        window.Point ||= window[getCamelizedVendor(vendor) + "Point"]
+        break if window.convertPointFromPageToNode and window.convertPointFromNodeToPage and window.Point
+
+      unless window.Point
+        # TODO: Implement Point() polyfill'
+        throw '[jQuery DragDrop] TODO: Implement Point() polyfill'
+      unless window.convertPointFromPageToNode
+        # TODO: Implement convertPointFromPageToNode() polyfill
+        throw '[jQuery DragDrop] TODO: Implement convertPointFromPageToNode() polyfill'
+      unless window.convertPointFromNodeToPage
+        # TODO: Implement convertPointFromNodeToPage() polyfill
+        throw '[jQuery DragDrop] TODO: Implement convertPointFromNodeToPage() polyfill'
+
+      # Prevent this function from running again
+      implementConvertPointPolyfill = -> #noop
 
     #
     # Config
@@ -112,6 +142,9 @@ jQuery ->
       # Bail if this is not a valid handle
       return unless @isValidHandle(e.target)
 
+      # Lazily implement a set of coordinate conversion polyfills
+      implementConvertPointPolyfill()
+
       # Store the mousedown event that started this drag
       @mousedownEvent = e
 
@@ -179,8 +212,8 @@ jQuery ->
       # Call any user-supplied start callback
       @getConfig().start?(e)
 
-      # Store the start offset of the draggable, with respect to the document
-      @elementStartDocumentOffset = @$element.offset()
+      # Store the start offset of the draggable, with respect to the page
+      @elementStartPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
 
       # Configure the drag helper
       helperConfig = @getConfig().helper
@@ -189,18 +222,33 @@ jQuery ->
         else if typeof helperConfig is 'function' then @synthesizeHelperUsingFactory helperConfig, e
         else @$element # Use the element itself
 
-      if @isPositionedAbsoluteish(@$helper)
-        # Store the start offset of the helper, with respect to its offset parent
-        @helperStartPosition = @$helper.position()
-      else
-        # Store the start position of the helper with respect to itself
-        @helperStartPosition ||= {}
-        for edge in ['top', 'left']
-          @helperStartPosition[edge] = parseInt(@$helper.css edge)
-          @helperStartPosition[edge] = 0 if @isNaN(@helperStartPosition[edge])
+      # Store the helper's parent; use it to map between the page coordinate space and the helper's parent coordinate space
+      @parent = @getOffsetParentOrTransformedParent(@$helper)
 
-      # Store the start offset of the helper, with respect to the document
-      @helperStartDocumentOffset = @$helper.offset()
+      helperPosition = @$helper.css('position')
+      @helperStartPosition = if helperPosition is 'fixed' and not @isTransformed(@parent)
+        # Simply use the position of the helper
+        @positionToPoint @$helper.position()
+      else if /fixed|absolute/.test helperPosition
+        # Convert the helper's start offset with respect to the page, to an offset in its offset parent or transformed parent's coordinate system
+        startPosition = convertPointFromPageToNode @parent, @elementStartPageOffset
+
+        if @isTransformed(@parent)
+          # Apply the scroll offset of the helper's parent
+          startPosition.x += @parent.scrollLeft
+          startPosition.y += @parent.scrollTop
+
+        # Store the start position
+        startPosition
+      else
+        # Store the start position of the helper with respect to its position in the document flow
+        new Point parseFloat(@$helper.css('left')), parseFloat(@$helper.css('top'))
+
+      # Map the mouse coordinates into the helper's coordinate space
+      {
+        x: @mousedownEvent.LocalX
+        y: @mousedownEvent.LocalY
+      } = convertPointFromPageToNode @parent, new Point(@mousedownEvent.pageX, @mousedownEvent.pageY)
 
       @$helper
         # Apply the dragging class
@@ -219,15 +267,18 @@ jQuery ->
         # Call any user-supplied drag callback
         @getConfig().drag?(e)
 
-        # How far has the mouse moved from its original position
+        # Map the mouse coordinates into the element's coordinate space
+        @localMousePosition = convertPointFromPageToNode @parent, new Point(e.pageX, e.pageY)
+
+        # How far has the object moved from its original position?
         delta =
-          x: e.pageX - @mousedownEvent.pageX
-          y: e.pageY - @mousedownEvent.pageY
+          x: @localMousePosition.x - @mousedownEvent.LocalX
+          y: @localMousePosition.y - @mousedownEvent.LocalY
 
         # Move the helper
         @$helper.css
-          left: parseInt(@helperStartPosition.left) + delta.x
-          top: parseInt(@helperStartPosition.top) + delta.y
+          left: @helperStartPosition.x + delta.x
+          top: @helperStartPosition.y + delta.y
 
     handleDragStop: (e) ->
       @cancelAnyScheduledDrag()
@@ -255,7 +306,8 @@ jQuery ->
         # No handle was specified; anything is fair game
         true
 
-    isPositionedAbsoluteish: (element) -> /fixed|absolute/.test element.css('position')
+    isTransformed: (element) ->
+      @getTransformMatrix(element) isnt 'none'
 
     #
     # Helpers
@@ -276,6 +328,29 @@ jQuery ->
 
       cancelAnimationFrame(@scheduledDragId)
       @scheduledDragId = null
+
+    getTransformMatrix: (element) ->
+      # Get the computed styles
+      computedStyle = getComputedStyle $(element).get(0)
+
+      # Return the matrix
+      computedStyle.WebkitTransform or computedStyle.msTransform or computedStyle.MozTransform or computedStyle.OTransform or 'none'
+
+    getOffsetParentOrTransformedParent: (element) ->
+      $element = $(element)
+
+      # If we don't find anything, we'll return the document element
+      foundAncestor = document.documentElement
+
+      # Crawl up the DOM, starting at this element's parent
+      for ancestor in $element.parents().get()
+        # Look for an ancestor of element that is either positioned, or transformed
+        if $(ancestor).css('position') isnt 'static' or @isTransformed(ancestor)
+          foundAncestor = ancestor
+          break
+
+      # Return the ancestor we found
+      foundAncestor
 
     scheduleDrag: (invocation) ->
       @cancelAnyScheduledDrag()
@@ -302,17 +377,20 @@ jQuery ->
       # Post process the helper element
       @prepareHelper helper.first()
 
-    prepareHelper: (helper) ->
+    positionToPoint: (position) ->
+      new Point position.left, position.top
+
+    prepareHelper: ($helper) ->
       css = {}
 
-      # Position the helper absolutely, unless it already is-ish
-      css.position = 'absolute' unless @isPositionedAbsoluteish(helper)
+      # Position the helper absolutely, unless it already is
+      css.position = 'absolute' unless $helper.css('position') is 'absolute'
 
       # Move the clone to the position of the original
-      css.top = @elementStartDocumentOffset.top
-      css.left = @elementStartDocumentOffset.left
+      css.left = @elementStartPageOffset.x
+      css.top = @elementStartPageOffset.y
 
-      helper
+      $helper
         # Remove the ID attribute
         .removeAttr('id')
         # Style it
@@ -323,10 +401,10 @@ jQuery ->
     cleanUp: ->
       # Clean up
       @dragStarted = false
-      @$helper = null
+      @elementStartPageOffset = {}
       @helperStartPosition = {}
-      @elementStartDocumentOffset = {}
-      @helperStartDocumentOffset = {}
+      delete @$helper
+      delete @parent
       delete @mousedownEvent
 
   $.fn.draggable = (options) ->

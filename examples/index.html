@@ -17,13 +17,13 @@
     return window.alert('Before checking out these examples, you will need to build the project. See the README for instructions how.') unless jQuery.draggable and jQuery.droppable
 
     # Initialize the draggable
-    $('#draggable').draggable()
+    $('#draggable_static').draggable()
 
     # Initialize the absolute draggable
-    $('#draggable.absolute').draggable()
+    $('#draggable_absolute').draggable()
 
     # Initialize the fixed draggable
-    $('#draggable.fixed').draggable()
+    $('#draggable_fixed').draggable()
 
     # Initialize the draggable with a handle
     $('#draggable_with_handle').draggable(handle: '#handle')
@@ -39,24 +39,31 @@
 
     # Initialize the droppable
     $('#droppable').droppable()
+
+    # Initialize the funhouse draggable/droppable
+    $('.funhouse #draggable_static').draggable()
+    $('.funhouse #draggable_annoying').draggable()
+    $('.funhouse #draggable_fixed').draggable()
+    $('.funhouse #draggable_absolute').draggable()
+    $('.funhouse #droppable').droppable()
   </script>
 
 </head>
 
 <body>
-  <div id="draggable">
+  <div id="draggable_static">
     <p>
       Drag me
     </p>
   </div>
 
-  <div id="draggable" class="absolute">
+  <div id="draggable_absolute">
     <p>
       Drag me, absolutely
     </p>
   </div>
 
-  <div id="draggable" class="fixed">
+  <div id="draggable_fixed">
     <p>
       Drag me, fixedly
     </p>
@@ -92,5 +99,37 @@
       Drop here
     </p>
   </div>
+
+  <section class="funhouse">
+    <div id="draggable_static" style="width: 500px">
+      <p>
+        Drag me in the funhouse
+      </p>
+    </div>
+
+    <div id="draggable_absolute">
+      <p>
+        Drag me absolutely in the funhouse
+      </p>
+    </div>
+
+    <div id="draggable_fixed">
+      <p>
+        Drag me fixedly in the funhouse
+      </p>
+    </div>
+
+    <div id="draggable_annoying" style="position: absolute">
+      <p>
+        Annoying draggable
+      </p>
+    </div>
+
+    <div id="droppable">
+      <p>
+        Dropping in the funhouse
+      </p>
+    </div>
+  </section>
 </body>
 </html>

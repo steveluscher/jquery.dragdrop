@@ -1,12 +1,12 @@
-#draggable { }
-#draggable.absolute {
+#draggable_static { }
+#draggable_absolute {
   position: absolute;
   top: 150px;
   left: 250px;
   width: 100px;
   height: 100px;
 }
-#draggable.fixed {
+#draggable_fixed {
   position: fixed;
   top: 25px;
   left: 250px;
@@ -40,4 +40,22 @@
 }
 .ui-droppable-hovered {
   background-color: blue;
+}
+
+.funhouse {
+  transform-origin: 20% 40%;
+  -webkit-transform-origin: 20% 40%;
+  -moz-transform-origin: 20% 40%;
+  -o-transform-origin: 20% 40%;
+  -ms-transform-origin: 20% 40%;
+
+  transform: rotate(10deg) scale(0.45) skew(20deg) translate(100px);
+  -webkit-transform: rotate(10deg) scale(0.45) skew(20deg) translate(100px);
+  -moz-transform: rotate(10deg) scale(0.45) skew(20deg) translate(100px);
+  -o-transform: rotate(10deg) scale(0.45) skew(20deg) translate(100px);
+  -ms-transform: rotate(10deg) scale(0.45) skew(20deg) translate(100px);
+
+  width: 400px;
+  height: 400px;
+  overflow: auto;
 }

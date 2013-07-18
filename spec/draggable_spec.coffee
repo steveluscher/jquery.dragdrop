@@ -6,6 +6,9 @@ describe 'A draggable', ->
     ineffectualButtons:
       'middle': jQuery.simulate.buttonCode.MIDDLE
       'right': jQuery.simulate.buttonCode.RIGHT
+    scrollOffsetVariants:
+      'no': 0
+      'a non-zero': 50
     handleConfigVariants:
       'selector': -> '#handle'
       'DOM element': -> $('#handle').get(0)
@@ -13,12 +16,29 @@ describe 'A draggable', ->
     helperConfigVariants:
       'clone': 'clone'
       'a factory method that produces something DOM-element-like': jasmine.createSpy('helperFactory').andReturn($('<div>').text('I’m a helper'))
+    elementPositionVariants: ['static', 'absolute', 'fixed']
+    getTransformCSS: (scale, skew, rotate, translate, originXPercent = 1, originYPercent = 1) ->
+      originString = "#{originXPercent * 100}% #{originYPercent * 100}%"
+      transformString = "rotate(#{rotate}deg) scale(#{scale}) skew(#{skew}deg) translate(#{translate}px)"
+      {
+        'transform-origin': originString
+        '-webkit-transform-origin': originString
+        '-moz-transform-origin': originString
+        '-o-transform-origin': originString
+        '-ms-transform-origin': originString
+
+        'transform': transformString
+        '-webkit-transform': transformString
+        '-moz-transform': transformString
+        '-o-transform': transformString
+        '-ms-transform': transformString
+      }
 
   describe 'configured using the default options', ->
 
     beforeEach ->
-      loadFixtures 'draggable.html'
-      @$draggable = $('#draggable').draggable()
+      loadFixtures 'draggable_static.html'
+      @$draggable = $('#draggable_static').draggable()
 
     it 'should possess the default draggable class', ->
       expect(@$draggable).toHaveClass $.draggable::defaults['draggableClass']
@@ -26,8 +46,8 @@ describe 'A draggable', ->
   describe 'configured using the draggableClass option', ->
 
     beforeEach ->
-      loadFixtures 'draggable.html'
-      @$draggable = $('#draggable').draggable(draggableClass: options.alternateDraggableClass)
+      loadFixtures 'draggable_static.html'
+      @$draggable = $('#draggable_static').draggable(draggableClass: options.alternateDraggableClass)
 
     it 'should possess the supplied draggable class', ->
       expect(@$draggable).toHaveClass options.alternateDraggableClass
@@ -35,8 +55,8 @@ describe 'A draggable', ->
   describe 'configured using the draggingClass option', ->
 
     beforeEach ->
-      loadFixtures 'draggable.html'
-      @$draggable = $('#draggable').draggable(draggingClass: options.alternateDraggingClass)
+      loadFixtures 'draggable_static.html'
+      @$draggable = $('#draggable_static').draggable(draggingClass: options.alternateDraggingClass)
 
     describe 'while in mid-drag', ->
 
@@ -59,8 +79,8 @@ describe 'A draggable', ->
     describe 'such as a start callback', ->
 
       beforeEach ->
-        loadFixtures 'draggable.html'
-        @$draggable = $('#draggable').draggable(start: @callback)
+        loadFixtures 'draggable_static.html'
+        @$draggable = $('#draggable_static').draggable(start: @callback)
 
       describe 'when clicked without having been dragged', ->
 
@@ -91,8 +111,8 @@ describe 'A draggable', ->
     describe 'such as a drag callback', ->
 
       beforeEach ->
-        loadFixtures 'draggable.html'
-        @$draggable = $('#draggable').draggable(drag: @callback)
+        loadFixtures 'draggable_static.html'
+        @$draggable = $('#draggable_static').draggable(drag: @callback)
 
       describe 'when dragged', ->
 
@@ -112,8 +132,8 @@ describe 'A draggable', ->
     describe 'such as a stop callback', ->
 
       beforeEach ->
-        loadFixtures 'draggable.html'
-        @$draggable = $('#draggable').draggable(stop: @callback)
+        loadFixtures 'draggable_static.html'
+        @$draggable = $('#draggable_static').draggable(stop: @callback)
 
       describe 'when clicked without having been dragged', ->
 
@@ -153,7 +173,7 @@ describe 'A draggable', ->
           @handleConfig = getHandleConfig()
           @handle = $(@handleConfig)
 
-          @$draggable = $('#draggable').draggable(handle: @handleConfig)
+          @$draggable = $('#draggable_static').draggable(handle: @handleConfig)
 
         describe 'after having been dragged by its handle', ->
 
@@ -229,8 +249,8 @@ describe 'A draggable', ->
     describe 'such as a factory method that doesn’t produce anything DOM-element-like', ->
 
       beforeEach ->
-        loadFixtures 'draggable.html'
-        @$draggable = $('#draggable').draggable(helper: -> 'Nothing that quacks like a DOM element')
+        loadFixtures 'draggable_static.html'
+        @$draggable = $('#draggable_static').draggable(helper: -> 'Nothing that quacks like a DOM element')
 
       describe 'when dragged', ->
 
@@ -251,8 +271,8 @@ describe 'A draggable', ->
         describe "such as #{variant}", ->
 
           beforeEach ->
-            loadFixtures 'draggable.html'
-            @$draggable = $('#draggable').draggable(helper: helperConfig)
+            loadFixtures 'draggable_static.html'
+            @$draggable = $('#draggable_static').draggable(helper: helperConfig)
 
           describe 'while in mid-drag', ->
 
@@ -343,8 +363,8 @@ describe 'A draggable', ->
   describe 'of any sort', ->
 
     beforeEach ->
-      loadFixtures 'draggable.html'
-      @$draggable = $('#draggable').draggable()
+      loadFixtures 'draggable_static.html'
+      @$draggable = $('#draggable_static').draggable()
       @originalOffset = @$draggable.offset()
 
     describe 'when mousedown’d upon', ->
@@ -476,17 +496,8 @@ describe 'A draggable', ->
   describe 'of the statically positioned sort', ->
 
     beforeEach ->
-      loadFixtures 'draggable.html'
-      @$draggable = $('#draggable').draggable()
-
-    describe 'when clicked on', ->
-
-      beforeEach ->
-        spyOnEvent @$draggable, 'mousedown'
-        SpecHelper.mouseDownInCenterOf @$draggable
-
-      it 'should be positioned statically', ->
-        expect(@$draggable).toHaveCss { position: 'static' }
+      loadFixtures 'draggable_static.html'
+      @$draggable = $('#draggable_static').draggable()
 
     describe 'while in mid-drag', ->
 
@@ -513,27 +524,12 @@ describe 'A draggable', ->
 
       it 'should be positioned relatively', ->
         expect(@$draggable).toHaveCss { position: 'relative' }
-
-      it 'should find itself the drag distance from its original top offset', ->
-        expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
-
-      it 'should find itself the drag distance from its original left offset', ->
-        expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
   describe 'of the absolutely positioned sort', ->
 
     beforeEach ->
       loadFixtures 'draggable_absolute.html'
-      @$draggable = $('#draggable.absolute').draggable()
-
-    describe 'when clicked on', ->
-
-      beforeEach ->
-        spyOnEvent @$draggable, 'mousedown'
-        SpecHelper.mouseDownInCenterOf @$draggable
-
-      it 'should be positioned absolutely', ->
-        expect(@$draggable).toHaveCss { position: 'absolute' }
+      @$draggable = $('#draggable_absolute').draggable()
 
     describe 'while in mid-drag', ->
 
@@ -560,27 +556,12 @@ describe 'A draggable', ->
 
       it 'should be positioned absolutely', ->
         expect(@$draggable).toHaveCss { position: 'absolute' }
-
-      it 'should find itself the drag distance from its original top offset', ->
-        expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
-
-      it 'should find itself the drag distance from its original left offset', ->
-        expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
   describe 'of the fixedly positioned sort', ->
 
     beforeEach ->
       loadFixtures 'draggable_fixed.html'
-      @$draggable = $('#draggable.fixed').draggable()
-
-    describe 'when clicked on', ->
-
-      beforeEach ->
-        spyOnEvent @$draggable, 'mousedown'
-        SpecHelper.mouseDownInCenterOf @$draggable
-
-      it 'should be positioned fixedly', ->
-        expect(@$draggable).toHaveCss { position: 'fixed' }
+      @$draggable = $('#draggable_fixed').draggable()
 
     describe 'while in mid-drag', ->
 
@@ -608,9 +589,140 @@ describe 'A draggable', ->
       it 'should be positioned fixedly', ->
         expect(@$draggable).toHaveCss { position: 'fixed' }
 
-      it 'should find itself the drag distance from its original top offset', ->
-        expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
+    describe 'in a document with a non-zero scroll offset', ->
 
-      it 'should find itself the drag distance from its original left offset', ->
-        expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
+      beforeEach ->
+        @oldScrollLeft = $(window).scrollLeft()
+        @oldScrollTop = $(window).scrollTop()
 
+        @spacer = $ '<p style="height: ' + ($(window).height() + 100) + 'px; width: ' + ($(window).width() + 100) + 'px;">'
+
+        $('body')
+          # Make sure that the body is larger than the viewport
+          .append(@spacer)
+        $(window)
+          # Scroll the window
+          .scrollLeft(@oldScrollLeft + 50)
+          .scrollTop(@oldScrollTop + 50)
+
+      afterEach ->
+        # Remove the spacer
+        @spacer.remove()
+
+        # Restore the scroll position
+        $(window)
+          .scrollLeft(@oldScrollLeft)
+          .scrollTop(@oldScrollTop)
+
+      describe 'after having been dragged', ->
+
+        beforeEach ->
+          @originalOffset = @$draggable.offset()
+
+          # Drag the draggable a standard distance
+          @$draggable.simulate 'drag',
+            dx: options.dragDistance
+            dy: options.dragDistance
+
+        it 'should find itself the drag distance from its original top offset', ->
+          expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
+
+        it 'should find itself the drag distance from its original left offset', ->
+          expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
+
+  for positionVariant in options.elementPositionVariants
+    do (positionVariant) ->
+
+      describe "of the #{positionVariant}#{if positionVariant is 'static' then 'al' else ''}ly positioned sort", ->
+
+        beforeEach ->
+          loadFixtures "draggable_#{positionVariant}.html"
+          @$draggable = $("#draggable_#{positionVariant}").draggable()
+
+        describe 'when clicked on', ->
+
+          beforeEach ->
+            spyOnEvent @$draggable, 'mousedown'
+            SpecHelper.mouseDownInCenterOf @$draggable
+
+          it "should be positioned #{positionVariant}#{if positionVariant is 'static' then 'al' else ''}ly", ->
+            expect(@$draggable).toHaveCss { position: positionVariant }
+
+        describe 'after having been dragged', ->
+
+          beforeEach ->
+            @originalOffset = @$draggable.offset()
+
+            # Drag the draggable a standard distance
+            @$draggable.simulate 'drag',
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+          it 'should find itself the drag distance from its original top offset', ->
+            expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
+
+          it 'should find itself the drag distance from its original left offset', ->
+            expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
+
+        for scrollVariant, scrollOffset of options.scrollOffsetVariants
+          do (scrollVariant, scrollOffset) ->
+
+            describe 'in a container with #{scrollVariant} scroll offset', ->
+
+              beforeEach ->
+                $('#jasmine-fixtures')
+                  # Make sure that something inside the test area is larger than the test area itself
+                  .append('<p style="height: 500px; width: 500px;">')
+                  .css
+                    width: 400
+                    height: 400
+                    # Make sure the transformed element is scrollable
+                    overflow: 'auto'
+                  # Scroll the transformed element
+                  .scrollLeft(scrollOffset)
+                  .scrollTop(scrollOffset)
+
+              describe 'after having been dragged', ->
+
+                beforeEach ->
+                  @originalOffset = @$draggable.offset()
+
+                  # Drag the draggable a standard distance
+                  @$draggable.simulate 'drag',
+                    dx: options.dragDistance
+                    dy: options.dragDistance
+
+                it 'should find itself the drag distance from its original top offset', ->
+                  expect(@$draggable.offset().top).toBeCloseTo(@originalOffset.top + options.dragDistance, 0)
+
+                it 'should find itself the drag distance from its original left offset', ->
+                  expect(@$draggable.offset().left).toBeCloseTo(@originalOffset.left + options.dragDistance, 0)
+
+              describe 'in a transformed coordinate space', ->
+
+                beforeEach ->
+                  # Same values as the .funhouse declaration in spec.css
+                  scale = 0.45
+                  rotate = 10
+                  skew = 20
+                  translate = 100
+                  originXPercent = 20
+                  originYPercent = 40
+
+                  # Apply scale, skew, translate, and rotate, with a non-default transform-origin
+                  $('#jasmine-fixtures').css options.getTransformCSS(scale, skew, rotate, translate, originXPercent, originYPercent)
+
+                describe 'after having been dragged', ->
+
+                 beforeEach ->
+                   @originalOffset = @$draggable.offset()
+                   # Drag the draggable a standard distance
+                   @$draggable.simulate 'drag',
+                     dx: options.dragDistance
+                     dy: options.dragDistance
+
+                 it 'should find itself the drag distance from its original top offset', ->
+                   expect(@$draggable.offset().top).toBeCloseTo(@originalOffset.top + options.dragDistance, 0)
+
+                 it 'should find itself the drag distance from its original left offset', ->
+                   expect(@$draggable.offset().left).toBeCloseTo(@originalOffset.left + options.dragDistance, 0)
