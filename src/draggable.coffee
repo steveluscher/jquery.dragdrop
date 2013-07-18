@@ -101,6 +101,9 @@ jQuery ->
     #
 
     handleElementMouseDown: (e) =>
+      isLeftButton = e.which is 1
+      return unless isLeftButton # Left clicks only, please
+
       @cancelAnyScheduledDrag()
 
       # Until told otherwise, the interaction started by this mousedown should not cancel any subsequent click event
@@ -128,6 +131,9 @@ jQuery ->
       @handleDrag(e)
 
     handleDocumentMouseUp: (e) =>
+      isLeftButton = e.which is 1
+      return unless isLeftButton # Left clicks only, please
+
       # Stop listening for mouse events on the document
       $(document).off
         mousemove: @handleMouseMove
