@@ -91,7 +91,7 @@ jQuery ->
         @handleOut(e.originalEvent)
 
         # Trigger the drop handler
-        @handleDrop(draggable, e.originalEvent)
+        @handleDrop(e.originalEvent)
 
       # Stop watching for the draggable to be dropped
       $(jQuery.draggable::).off
@@ -136,7 +136,7 @@ jQuery ->
       # Call any user-supplied out callback
       @getConfig().out?(e)
 
-    handleDrop: (draggable, e) =>
+    handleDrop: (e) ->
       # Call any user-supplied drop callback
       @getConfig().drop?(e)
 
