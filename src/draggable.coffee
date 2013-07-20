@@ -316,31 +316,31 @@ jQuery ->
         mousemove: @handleMouseMove
         mouseup: @handleMouseUp
 
-      # Lest a click event occur before cleanup is called, decide whether it should be permitted or not
-      @shouldCancelClick = !!@dragStarted
+      if @dragStarted
 
-      return unless @dragStarted
+        # Lest a click event occur before cleanup is called, decide whether it should be permitted or not
+        @shouldCancelClick = !!@dragStarted
 
-      # Compute the event metadata
-      eventMetadata = @getEventMetadata()
+        # Compute the event metadata
+        eventMetadata = @getEventMetadata()
 
-      if @getConfig().helper is 'original'
-        # Remove the dragging class
-        @$helper.removeClass @getConfig().draggingClass
-      else
-        # Destroy the helper
-        @$helper.remove()
-        # Trigger the click event on the original element
-        @$element.trigger('click', e)
+        if @getConfig().helper is 'original'
+          # Remove the dragging class
+          @$helper.removeClass @getConfig().draggingClass
+        else
+          # Destroy the helper
+          @$helper.remove()
+          # Trigger the click event on the original element
+          @$element.trigger('click', e)
 
-      # Restore the original value of the pointer-events property
-      @$element.css(pointerEvents: @originalPointerEventsPropertyValue)
+        # Restore the original value of the pointer-events property
+        @$element.css(pointerEvents: @originalPointerEventsPropertyValue)
 
-      # Call any user-supplied stop callback
-      @getConfig().stop?(e, eventMetadata)
+        # Call any user-supplied stop callback
+        @getConfig().stop?(e, eventMetadata)
 
-      # Broadcast to interested subscribers that this droppable has been dropped
-      @broadcast('stop', e)
+        # Broadcast to interested subscribers that this droppable has been dropped
+        @broadcast('stop', e)
 
       # Clean up
       @cleanUp()
