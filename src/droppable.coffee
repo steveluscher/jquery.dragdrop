@@ -137,8 +137,11 @@ jQuery ->
       @getConfig().out?(e)
 
     handleDrop: (e) ->
+      # Compute the event metadata
+      eventMetadata = @getEventMetadata()
+
       # Call any user-supplied drop callback
-      @getConfig().drop?(e)
+      @getConfig().drop?(e, eventMetadata)
 
     #
     # Helpers

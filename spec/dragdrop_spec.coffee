@@ -178,8 +178,19 @@ describe 'A droppable', ->
             clientX: droppableCenter.x
             clientY: droppableCenter.y
 
-        it 'should call the drop callback once', ->
-          expect(@callback.callCount).toBe(1)
+        describe 'the drop callback', ->
+          it 'should have been called once', ->
+            expect(@callback.callCount).toBe(1)
 
-        it 'should call the drop callback with the jQuery mouse event as the first parameter', ->
-          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+          it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
+            expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
+
+        describe 'the second parameter to the drop callback', ->
+
+          SpecHelper.metadataSpecs.call this,
+            expectedPosition: ->
+              top: parseFloat(@$draggable.css('top')) or 0
+              left: parseFloat(@$draggable.css('left')) or 0
+            expectedOffset: -> @$draggable.offset()
+            expectedHelper: -> @$draggable
+            expectedDraggable: -> @$draggable.data('draggable')
