@@ -253,9 +253,10 @@ jQuery ->
         .css(pointerEvents: 'none')
 
       unless @$helper is @$element
-        @$helper
-          # Append the helper to the body
-          .appendTo('body')
+        requestAnimationFrame =>
+          @$helper
+            # Append the helper to the body
+            .appendTo('body')
 
       # Map the mouse coordinates into the helper's coordinate space
       {
