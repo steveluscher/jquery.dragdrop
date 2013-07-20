@@ -305,7 +305,7 @@ describe 'A draggable', ->
                 it 'should be called with the draggable and the event as arguments', ->
                   expect(helperConfig).toHaveBeenCalledWith(@$draggable.get(0), jasmine.any(jQuery.Event))
 
-            describe 'the helper', =>
+            describe 'the helper', ->
 
               it 'should be positioned absolutely', ->
                 expect(@appendedElement).toHaveCss { position: 'absolute' }
