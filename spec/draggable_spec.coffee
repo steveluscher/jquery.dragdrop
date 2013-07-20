@@ -78,56 +78,136 @@ describe 'A draggable', ->
 
     describe 'such as a start callback', ->
 
-      beforeEach ->
-        loadFixtures 'draggable_static.html'
-        @$draggable = $('#draggable_static').draggable(start: @callback)
-
-      describe 'when clicked without having been dragged', ->
+      describe 'that returns false', ->
 
         beforeEach ->
-          # Click the draggable, but don't move it
-          @$draggable
-            .simulate('mousedown')
-            .simulate('mouseup')
-            .simulate('click')
+          @callback.andReturn(false)
 
-        it 'should not call the start callback', ->
-          expect(@callback).not.toHaveBeenCalled()
+          loadFixtures 'draggable_static.html'
+          @$draggable = $('#draggable_static').draggable(start: @callback)
 
-      describe 'when dragged', ->
+        describe 'when dragged', ->
+
+          beforeEach ->
+            @originalOffset = @$draggable.offset()
+
+            # Drag the draggable a standard distance
+            @$draggable.simulate 'drag',
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+          it 'should find itself at its original top offset', ->
+            expect(@$draggable.offset().top).toBe(@originalOffset.top)
+
+          it 'should find itself at its original left offset', ->
+            expect(@$draggable.offset().left).toBe(@originalOffset.left)
+
+      describe 'that does not return false', ->
 
         beforeEach ->
-          # Drag the draggable a standard distance
-          @$draggable.simulate 'drag',
-            dx: options.dragDistance
-            dy: options.dragDistance
+          loadFixtures 'draggable_static.html'
+          @$draggable = $('#draggable_static').draggable(start: @callback)
 
-        it 'should call the start callback', ->
-          expect(@callback).toHaveBeenCalled()
+        describe 'when clicked without having been dragged', ->
 
-        it 'should call the start callback with the jQuery mouse event as the first parameter', ->
-          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+          beforeEach ->
+            # Click the draggable, but don't move it
+            @$draggable
+              .simulate('mousedown')
+              .simulate('mouseup')
+              .simulate('click')
+
+          it 'should not call the start callback', ->
+            expect(@callback).not.toHaveBeenCalled()
+
+        describe 'when dragged', ->
+
+          beforeEach ->
+            @originalPosition =
+              top: parseFloat(@$draggable.css('top')) or 0
+              left: parseFloat(@$draggable.css('left')) or 0
+
+            # Drag the draggable a standard distance
+            @$draggable.simulate 'drag',
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+          describe 'the start callback', ->
+
+            it 'should have been called once', ->
+              expect(@callback.callCount).toBe(1)
+
+            it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
+              expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
+
+          describe 'the second parameter to the start callback', ->
+
+            SpecHelper.metadataSpecs.call this,
+              expectedPosition: -> @originalPosition
 
     describe 'such as a drag callback', ->
 
-      beforeEach ->
-        loadFixtures 'draggable_static.html'
-        @$draggable = $('#draggable_static').draggable(drag: @callback)
-
-      describe 'when dragged', ->
+      describe 'that returns false', ->
 
         beforeEach ->
-          # Drag the draggable a standard distance
-          @$draggable.simulate 'drag',
-            moves: 10
-            dx: options.dragDistance
-            dy: options.dragDistance
+          @callback.andReturn(false)
 
-        it 'should call the drag callback once for every mouse movement', ->
-          expect(@callback.callCount).toBe(10)
+          loadFixtures 'draggable_static.html'
+          @$draggable = $('#draggable_static').draggable(drag: @callback)
 
-        it 'should call the drag callback with the jQuery mouse event as the first parameter', ->
-          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+        describe 'when dragged', ->
+
+          beforeEach ->
+            @originalOffset = @$draggable.offset()
+
+            # Drag the draggable a standard distance
+            @$draggable.simulate 'drag',
+              moves: 2
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+          it 'should find itself at its original top offset', ->
+            expect(@$draggable.offset().top).toBe(@originalOffset.top)
+
+          it 'should find itself at its original left offset', ->
+            expect(@$draggable.offset().left).toBe(@originalOffset.left)
+
+          describe 'the drag callback', ->
+
+            it 'should have been called once', ->
+              expect(@callback.callCount).toBe(1)
+
+      describe 'that does not return false', ->
+
+        beforeEach ->
+          loadFixtures 'draggable_static.html'
+          @$draggable = $('#draggable_static').draggable(drag: @callback)
+
+        describe 'when dragged', ->
+
+          beforeEach ->
+            @moves = 10
+
+            # Drag the draggable a standard distance
+            @$draggable.simulate 'drag',
+              moves: @moves
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+          describe 'the drag callback', ->
+
+            it 'should have been called once for every mouse movement', ->
+              expect(@callback.callCount).toBe(@moves)
+
+            it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
+              expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
+
+          describe 'the second parameter to the drag callback', ->
+
+            SpecHelper.metadataSpecs.call this,
+              expectedPosition: ->
+                top: parseFloat(@$draggable.css('top')) or 0
+                left: parseFloat(@$draggable.css('left')) or 0
 
     describe 'such as a stop callback', ->
 
@@ -155,11 +235,20 @@ describe 'A draggable', ->
             dx: options.dragDistance
             dy: options.dragDistance
 
-        it 'should call the stop callback', ->
-          expect(@callback).toHaveBeenCalled()
+        describe 'the stop callback', ->
 
-        it 'should call the stop callback with the jQuery mouse event as the first parameter', ->
-          expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+          it 'should have been called once', ->
+            expect(@callback.callCount).toBe(1)
+
+          it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
+            expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
+
+        describe 'the second parameter to the stop callback', ->
+
+          SpecHelper.metadataSpecs.call this,
+            expectedPosition: ->
+              top: parseFloat(@$draggable.css('top')) or 0
+              left: parseFloat(@$draggable.css('left')) or 0
 
   for variant, getHandleConfig of options.handleConfigVariants
     do (variant, getHandleConfig) ->

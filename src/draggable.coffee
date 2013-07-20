@@ -161,36 +161,14 @@ jQuery ->
       @handleDragStart(e) unless @dragStarted
 
       # Trigger the drag event
-      @handleDrag(e)
+      @handleDrag(e) if @dragStarted
 
     handleDocumentMouseUp: (e) =>
       isLeftButton = e.which is 1
       return unless isLeftButton # Left clicks only, please
 
-      # Stop listening for mouse events on the document
-      $(document).off
-        mousemove: @handleMouseMove
-        mouseup: @handleMouseUp
-
-      # Lest a click event follow this mouseup, decide whether it should be permitted or not
-      @shouldCancelClick = !!@dragStarted
-
-      return unless @dragStarted
-
-      if @getConfig().helper is 'original'
-        # Remove the dragging class
-        @$helper.removeClass @getConfig().draggingClass
-      else
-        # Destroy the helper
-        @$helper.remove()
-        # Trigger the click event on the original element
-        @$element.trigger('click', e)
-
       # Trigger the stop event
       @handleDragStop(e)
-
-      # Clean up
-      @cleanUp()
 
     handleElementClick: (e) =>
       # Clicks should be cancelled if the last mousedown/mouseup interaction resulted in a drag
@@ -204,57 +182,82 @@ jQuery ->
     #
 
     handleDragStart: (e) ->
+      # Will we use the original element as the helper, or will we synthesize a new one?
+      helperConfig = @getConfig().helper
+      helperIsSynthesized = helperConfig isnt 'original'
+
+      # Get (or synthesize temporarily) a placeholder for the drag helper
+      helperPlaceholder =
+        if helperIsSynthesized then $('<div style="height: 0; width: 0; visibility: none">').appendTo('body')
+        else @$element # Use the element itself
+
+      # Store the helper's parent; we will use it to map between the page coordinate space and the helper's parent coordinate space
+      @parent = if helperIsSynthesized
+        # Go to the target attachment point of the syntheized helper, and search up the DOM for a parent
+        @getOffsetParentOrTransformedParent(helperPlaceholder)
+      else
+        # Start from the original element, and search up the DOM for a parent
+        @getOffsetParentOrTransformedParent(@$element)
+
+      # Thanks, drag helper placeholder; you can go now
+      helperPlaceholder.remove() if helperIsSynthesized
+
+      # Should we calculate the helper's offset, or simply read its 'top' and 'left' CSS properties?
+      shouldCalculateOffset =
+        # Always calculate the offset if a synthesized helper is involved
+        helperIsSynthesized or
+        # …or if the original element behaves as though it is absolutely positioned
+        ((elementPosition = @$element.css('position')) is 'absolute' or (elementPosition is 'fixed' and @isTransformed(@parent)))
+
+      @helperStartPosition = if shouldCalculateOffset
+        # Store the start offset of the draggable, with respect to the page
+        @elementStartPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
+
+        # Convert between the offset with respect to the page, and one with respect to its offset or transformed parent's coordinate system
+        startPosition = convertPointFromPageToNode @parent, @elementStartPageOffset
+
+        if @isTransformed(@parent)
+          # Apply the scroll offset of the element's transformed parent
+          startPosition.x += @parent.scrollLeft
+          startPosition.y += @parent.scrollTop
+
+        # Store the result
+        startPosition
+      else
+        # Store the start position of the element with respect to its location in the document flow
+        new Point parseFloat(@$element.css('left')), parseFloat(@$element.css('top'))
+
+      # Call any user-supplied drag callback; cancel the start if it returns false
+      startPosition = @pointToPosition @helperStartPosition
+      return if @getConfig().start?(e, @getEventMetadata(startPosition)) is false
+
       @cancelAnyScheduledDrag()
 
       # Lazily perform setup on the element
       @setupElement() unless @setupPerformed
 
-      # Call any user-supplied start callback
-      @getConfig().start?(e)
-
-      # Store the start offset of the draggable, with respect to the page
-      @elementStartPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
-
       # Configure the drag helper
-      helperConfig = @getConfig().helper
       @$helper =
         if helperConfig is 'clone' then @synthesizeHelperByCloning @$element
         else if typeof helperConfig is 'function' then @synthesizeHelperUsingFactory helperConfig, e
         else @$element # Use the element itself
-
-      # Store the helper's parent; use it to map between the page coordinate space and the helper's parent coordinate space
-      @parent = @getOffsetParentOrTransformedParent(@$helper)
-
-      helperPosition = @$helper.css('position')
-      @helperStartPosition = if helperPosition is 'fixed' and not @isTransformed(@parent)
-        # Simply use the position of the helper
-        @positionToPoint @$helper.position()
-      else if /fixed|absolute/.test helperPosition
-        # Convert the helper's start offset with respect to the page, to an offset in its offset parent or transformed parent's coordinate system
-        startPosition = convertPointFromPageToNode @parent, @elementStartPageOffset
-
-        if @isTransformed(@parent)
-          # Apply the scroll offset of the helper's parent
-          startPosition.x += @parent.scrollLeft
-          startPosition.y += @parent.scrollTop
-
-        # Store the start position
-        startPosition
-      else
-        # Store the start position of the helper with respect to its position in the document flow
-        new Point parseFloat(@$helper.css('left')), parseFloat(@$helper.css('top'))
-
-      # Map the mouse coordinates into the helper's coordinate space
-      {
-        x: @mousedownEvent.LocalX
-        y: @mousedownEvent.LocalY
-      } = convertPointFromPageToNode @parent, new Point(@mousedownEvent.pageX, @mousedownEvent.pageY)
 
       @$helper
         # Apply the dragging class
         .addClass(@getConfig().draggingClass)
         # Kill pointer events while in mid-drag
         .css(pointerEvents: 'none')
+
+      unless @$helper is @$element
+        @$helper
+          # Append the helper to the body
+          .appendTo('body')
+
+      # Map the mouse coordinates into the helper's coordinate space
+      {
+        x: @mousedownEvent.LocalX
+        y: @mousedownEvent.LocalY
+      } = convertPointFromPageToNode @parent, new Point(@mousedownEvent.pageX, @mousedownEvent.pageY)
 
       # Mark the drag as having started
       @dragStarted = true
@@ -264,9 +267,6 @@ jQuery ->
 
     handleDrag: (e) ->
       @scheduleDrag =>
-        # Call any user-supplied drag callback
-        @getConfig().drag?(e)
-
         # Map the mouse coordinates into the element's coordinate space
         @localMousePosition = convertPointFromPageToNode @parent, new Point(e.pageX, e.pageY)
 
@@ -275,22 +275,55 @@ jQuery ->
           x: @localMousePosition.x - @mousedownEvent.LocalX
           y: @localMousePosition.y - @mousedownEvent.LocalY
 
-        # Move the helper
-        @$helper.css
+        # Calculate the helper's target position
+        targetPosition =
           left: @helperStartPosition.x + delta.x
           top: @helperStartPosition.y + delta.y
 
+        # Call any user-supplied drag callback; cancel the drag if it returns false
+        if @getConfig().drag?(e, @getEventMetadata(targetPosition)) is false
+          @handleDragStop(e)
+          return
+
+        # Move the helper
+        @$helper.css targetPosition
+
     handleDragStop: (e) ->
       @cancelAnyScheduledDrag()
+
+      # Stop listening for mouse events on the document
+      $(document).off
+        mousemove: @handleMouseMove
+        mouseup: @handleMouseUp
+
+      # Lest a click event occur before cleanup is called, decide whether it should be permitted or not
+      @shouldCancelClick = !!@dragStarted
+
+      return unless @dragStarted
+
+      # Store the event metadata
+      eventMetadata = @getEventMetadata()
+
+      if @getConfig().helper is 'original'
+        # Remove the dragging class
+        @$helper.removeClass @getConfig().draggingClass
+      else
+        # Destroy the helper
+        @$helper.remove()
+        # Trigger the click event on the original element
+        @$element.trigger('click', e)
 
       # Restore the original value of the pointer-events property
       @$element.css(pointerEvents: @originalPointerEventsPropertyValue)
 
       # Call any user-supplied stop callback
-      @getConfig().stop?(e)
+      @getConfig().stop?(e, eventMetadata)
 
       # Broadcast to interested subscribers that this droppable has been dropped
       @broadcast('stop', e)
+
+      # Clean up
+      @cleanUp()
 
     #
     # Validators
@@ -336,6 +369,13 @@ jQuery ->
       # Return the matrix
       computedStyle.WebkitTransform or computedStyle.msTransform or computedStyle.MozTransform or computedStyle.OTransform or 'none'
 
+    getEventMetadata: (position) ->
+      # Report the position of the helper
+      position: position or {
+        top: parseFloat(@$helper.css('top')) or 0
+        left: parseFloat(@$helper.css('left')) or 0
+      }
+
     getOffsetParentOrTransformedParent: (element) ->
       $element = $(element)
 
@@ -380,6 +420,10 @@ jQuery ->
     positionToPoint: (position) ->
       new Point position.left, position.top
 
+    pointToPosition: (point) ->
+      left: point.x
+      top: point.y
+
     prepareHelper: ($helper) ->
       css = {}
 
@@ -395,8 +439,6 @@ jQuery ->
         .removeAttr('id')
         # Style it
         .css(css)
-        # Attach it to the body
-        .appendTo('body')
 
     cleanUp: ->
       # Clean up
