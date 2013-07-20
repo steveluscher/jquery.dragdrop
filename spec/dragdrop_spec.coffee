@@ -140,11 +140,13 @@ describe 'A droppable', ->
               clientX: droppableTopCorner.left - 1
               clientY: droppableTopCorner.top - 1
 
-          it 'should call the out callback once', ->
-            expect(@callback.callCount).toBe(1)
+          describe 'the out callback', ->
 
-          it 'should call the out callback with the jQuery mouse event as the first parameter', ->
-            expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+            it 'should have been called once', ->
+              expect(@callback.callCount).toBe(1)
+
+            it 'should have been called with the jQuery mouse event as the first parameter', ->
+              expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
 
     describe 'such as a drop callback', ->
 
