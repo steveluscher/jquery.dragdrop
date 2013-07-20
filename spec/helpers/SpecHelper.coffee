@@ -35,7 +35,7 @@ class this.SpecHelper
         expect(actualOffset).toEqual(expectedOffset)
 
     if options.expectedHelper
-      it 'should have a helper property that represents a reference to the drag helper‘s DOM element', ->
+      it 'should have a helper property that represents a reference to the drag helper’s DOM element', ->
         expectedHelper = options.expectedHelper.call(this)
         actualHelper = @[options.spyName].mostRecentCall.args[options.argNumber].helper
         expect(actualHelper).toBe(expectedHelper)
