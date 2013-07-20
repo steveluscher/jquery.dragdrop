@@ -214,6 +214,35 @@ describe 'A draggable', ->
               expectedOffset: -> @$draggable.offset()
               expectedHelper: -> @$draggable
 
+      describe 'that modifies the position property', ->
+
+        beforeEach ->
+          @modifiedTopPosition = 123
+          @modifiedLeftPosition = 456
+
+          @callback.andCallFake (event, metadata) =>
+            metadata.position.top += @modifiedTopPosition
+            metadata.position.left += @modifiedLeftPosition
+
+          loadFixtures 'draggable_static.html'
+          @$draggable = $('#draggable_static').draggable(drag: @callback)
+
+        describe 'when dragged', ->
+
+          beforeEach ->
+            @originalOffset = @$draggable.offset()
+
+            # Drag the draggable a standard distance
+            @$draggable.simulate 'drag',
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+          it 'should find itself at the modified top offset', ->
+            expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance + @modifiedTopPosition)
+
+          it 'should find itself at the modified left offset', ->
+            expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance + @modifiedLeftPosition)
+
     describe 'such as a stop callback', ->
 
       beforeEach ->

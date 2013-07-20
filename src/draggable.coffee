@@ -224,10 +224,13 @@ jQuery ->
         # Store the start position of the element with respect to its location in the document flow
         new Point parseFloat(@$element.css('left')), parseFloat(@$element.css('top'))
 
-      # Call any user-supplied drag callback; cancel the start if it returns false
+      # Compute the event metadata
       startPosition = @pointToPosition @helperStartPosition
       startOffset = @pointToPosition @elementStartPageOffset
-      return if @getConfig().start?(e, @getEventMetadata(startPosition, startOffset)) is false
+      eventMetadata = @getEventMetadata(startPosition, startOffset)
+
+      # Call any user-supplied drag callback; cancel the start if it returns false
+      return if @getConfig().start?(e, eventMetadata) is false
 
       @cancelAnyScheduledDrag()
 
@@ -286,13 +289,16 @@ jQuery ->
           top: @elementStartPageOffset.y + (e.pageY - @mousedownEvent.pageY)
           left: @elementStartPageOffset.x + (e.pageX - @mousedownEvent.pageX)
 
+        # Compute the event metadata
+        eventMetadata = @getEventMetadata(targetPosition, targetOffset)
+
         # Call any user-supplied drag callback; cancel the drag if it returns false
-        if @getConfig().drag?(e, @getEventMetadata(targetPosition, targetOffset)) is false
+        if @getConfig().drag?(e, eventMetadata) is false
           @handleDragStop(e)
           return
 
         # Move the helper
-        @$helper.css targetPosition
+        @$helper.css eventMetadata.position
 
     handleDragStop: (e) ->
       @cancelAnyScheduledDrag()
@@ -307,7 +313,7 @@ jQuery ->
 
       return unless @dragStarted
 
-      # Store the event metadata
+      # Compute the event metadata
       eventMetadata = @getEventMetadata()
 
       if @getConfig().helper is 'original'
