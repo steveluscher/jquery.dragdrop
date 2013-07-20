@@ -41,7 +41,7 @@ class this.SpecHelper
         expect(actualHelper).toBe(expectedHelper)
 
     if options.expectedDraggable
-      it 'should have a draggable property that represents a reference to the drag helper‘s draggable object', ->
+      it 'should have a draggable property that represents a reference to the draggable’s original DOM element', ->
         expectedDraggable = options.expectedDraggable.call(this)
         actualDraggable = @[options.spyName].mostRecentCall.args[options.argNumber].draggable
         expect(actualDraggable).toBe(expectedDraggable)

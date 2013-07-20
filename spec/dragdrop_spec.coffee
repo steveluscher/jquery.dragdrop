@@ -101,7 +101,7 @@ describe 'A droppable', ->
               left: parseFloat(@$draggable.css('left')) or 0
             expectedOffset: -> @$draggable.offset()
             expectedHelper: -> @$draggable
-            expectedDraggable: -> @$draggable.data('draggable')
+            expectedDraggable: -> @$draggable
 
     describe 'such as an out callback', ->
 
@@ -193,4 +193,4 @@ describe 'A droppable', ->
               left: parseFloat(@$draggable.css('left')) or 0
             expectedOffset: -> @$draggable.offset()
             expectedHelper: -> @$draggable
-            expectedDraggable: -> @$draggable.data('draggable')
+            expectedDraggable: -> @$draggable
