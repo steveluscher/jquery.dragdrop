@@ -395,22 +395,6 @@ jQuery ->
       # Return the matrix
       computedStyle.WebkitTransform or computedStyle.msTransform or computedStyle.MozTransform or computedStyle.OTransform or 'none'
 
-    getEventMetadata: (position, offset) ->
-      metadata =
-        # Report the position of the helper
-        position: position or {
-          top: parseFloat(@$helper.css('top')) or 0
-          left: parseFloat(@$helper.css('left')) or 0
-        }
-        # Report the offset of the helper
-        offset: offset or @$helper.offset()
-
-      # Supply a reference to the helper's DOM element, if available
-      metadata.helper = @$helper if @$helper
-
-      # Return the metadata
-      metadata
-
     getOffsetParentOrTransformedParent: (element) ->
       $element = $(element)
 
