@@ -120,9 +120,6 @@ jQuery ->
       # Position the draggable relative if it's currently statically positioned
       @$element.css(position: 'relative') if @getConfig().helper is 'original' and @$element.css('position') is 'static'
 
-      # Save the original value of the pointer-events CSS property
-      @originalPointerEventsPropertyValue = @$element.css('pointerEvents')
-
       # Done!
       @setupPerformed = true
 
@@ -235,6 +232,9 @@ jQuery ->
 
       # Lazily perform setup on the element
       @setupElement() unless @setupPerformed
+
+      # Save the original value of the pointer-events CSS property
+      @originalPointerEventsPropertyValue = @$element.css('pointerEvents')
 
       # Configure the drag helper
       @$helper =
