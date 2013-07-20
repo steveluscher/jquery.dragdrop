@@ -212,6 +212,7 @@ describe 'A draggable', ->
                 top: parseFloat(@$draggable.css('top')) or 0
                 left: parseFloat(@$draggable.css('left')) or 0
               expectedOffset: -> @$draggable.offset()
+              expectedHelper: -> @$draggable
 
     describe 'such as a stop callback', ->
 
@@ -254,6 +255,7 @@ describe 'A draggable', ->
               top: parseFloat(@$draggable.css('top')) or 0
               left: parseFloat(@$draggable.css('left')) or 0
             expectedOffset: -> @$draggable.offset()
+            expectedHelper: -> @$draggable
 
   for variant, getHandleConfig of options.handleConfigVariants
     do (variant, getHandleConfig) ->

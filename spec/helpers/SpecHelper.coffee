@@ -34,6 +34,12 @@ class this.SpecHelper
         actualOffset = @[options.spyName].mostRecentCall.args[options.argNumber].offset
         expect(actualOffset).toEqual(expectedOffset)
 
+    if options.expectedHelper
+      it 'should have a helper property that represents a reference to the drag helper‘s DOM element', ->
+        expectedHelper = options.expectedHelper.call(this)
+        actualHelper = @[options.spyName].mostRecentCall.args[options.argNumber].helper
+        expect(actualHelper).toBe(expectedHelper)
+
   @isNumber: (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
   @isNaN: (obj) -> @isNumber(obj) and window.isNaN(obj)
   @applyDefaults: (obj, sources...) ->
