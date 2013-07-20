@@ -40,6 +40,12 @@ class this.SpecHelper
         actualHelper = @[options.spyName].mostRecentCall.args[options.argNumber].helper
         expect(actualHelper).toBe(expectedHelper)
 
+    if options.expectedDraggable
+      it 'should have a draggable property that represents a reference to the drag helper‘s draggable object', ->
+        expectedDraggable = options.expectedDraggable.call(this)
+        actualDraggable = @[options.spyName].mostRecentCall.args[options.argNumber].draggable
+        expect(actualDraggable).toBe(expectedDraggable)
+
   @isNumber: (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
   @isNaN: (obj) -> @isNumber(obj) and window.isNaN(obj)
   @applyDefaults: (obj, sources...) ->

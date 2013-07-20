@@ -27,5 +27,8 @@ class jQuery.dragdrop
     # Supply a reference to the helper's DOM element, if available
     metadata.helper = @$helper if @$helper?
 
+    # Supply a reference to the draggable, if available
+    metadata.draggable = @draggable if @draggable?
+
     # Return the metadata
     metadata

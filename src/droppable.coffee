@@ -69,6 +69,12 @@ jQuery ->
       # Mark the drag as having started
       @dragStarted = true
 
+      # Store a reference to the draggable
+      @draggable = draggable
+
+      # Store a reference to the drag helper
+      @$helper = @draggable.$helper
+
       # Did this drag start over top of this droppable?
       elementUnderMouse = document.elementFromPoint(e.originalEvent.clientX, e.originalEvent.clientY)
 
@@ -111,8 +117,11 @@ jQuery ->
       # Mark this droppable as being the drop target
       @isDropTarget = true
 
+      # Compute the event metadata
+      eventMetadata = @getEventMetadata()
+
       # Call any user-supplied over callback
-      @getConfig().over?(e)
+      @getConfig().over?(e, eventMetadata)
 
     handleOut: (e) =>
       return unless @dragStarted
@@ -139,6 +148,8 @@ jQuery ->
       # Clean up
       @dragStarted = false
       @isDropTarget = false
+      delete @draggable
+      delete @$helper
 
   $.fn.droppable = (options) ->
     this.each ->
