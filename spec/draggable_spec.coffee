@@ -127,6 +127,8 @@ describe 'A draggable', ->
               top: parseFloat(@$draggable.css('top')) or 0
               left: parseFloat(@$draggable.css('left')) or 0
 
+            @originalOffset = @$draggable.offset()
+
             # Drag the draggable a standard distance
             @$draggable.simulate 'drag',
               dx: options.dragDistance
@@ -144,6 +146,7 @@ describe 'A draggable', ->
 
             SpecHelper.metadataSpecs.call this,
               expectedPosition: -> @originalPosition
+              expectedOffset: -> @originalOffset
 
     describe 'such as a drag callback', ->
 
@@ -208,6 +211,7 @@ describe 'A draggable', ->
               expectedPosition: ->
                 top: parseFloat(@$draggable.css('top')) or 0
                 left: parseFloat(@$draggable.css('left')) or 0
+              expectedOffset: -> @$draggable.offset()
 
     describe 'such as a stop callback', ->
 
@@ -249,6 +253,7 @@ describe 'A draggable', ->
             expectedPosition: ->
               top: parseFloat(@$draggable.css('top')) or 0
               left: parseFloat(@$draggable.css('left')) or 0
+            expectedOffset: -> @$draggable.offset()
 
   for variant, getHandleConfig of options.handleConfigVariants
     do (variant, getHandleConfig) ->

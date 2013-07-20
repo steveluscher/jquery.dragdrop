@@ -28,6 +28,12 @@ class this.SpecHelper
         actualPosition = @[options.spyName].mostRecentCall.args[options.argNumber].position
         expect(actualPosition).toEqual(expectedPosition)
 
+    if options.expectedOffset
+      it 'should have an offset property that represents the offset of the helper', ->
+        expectedOffset = options.expectedOffset.call(this)
+        actualOffset = @[options.spyName].mostRecentCall.args[options.argNumber].offset
+        expect(actualOffset).toEqual(expectedOffset)
+
   @isNumber: (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
   @isNaN: (obj) -> @isNumber(obj) and window.isNaN(obj)
   @applyDefaults: (obj, sources...) ->

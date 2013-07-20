@@ -206,10 +206,10 @@ jQuery ->
         # …or if the original element behaves as though it is absolutely positioned
         ((elementPosition = @$element.css('position')) is 'absolute' or (elementPosition is 'fixed' and @isTransformed(@parent)))
 
-      @helperStartPosition = if shouldCalculateOffset
-        # Store the start offset of the draggable, with respect to the page
-        @elementStartPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
+      # Store the start offset of the draggable, with respect to the page
+      @elementStartPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
 
+      @helperStartPosition = if shouldCalculateOffset
         # Convert between the offset with respect to the page, and one with respect to its offset or transformed parent's coordinate system
         startPosition = convertPointFromPageToNode @parent, @elementStartPageOffset
 
@@ -226,7 +226,8 @@ jQuery ->
 
       # Call any user-supplied drag callback; cancel the start if it returns false
       startPosition = @pointToPosition @helperStartPosition
-      return if @getConfig().start?(e, @getEventMetadata(startPosition)) is false
+      startOffset = @pointToPosition @elementStartPageOffset
+      return if @getConfig().start?(e, @getEventMetadata(startPosition, startOffset)) is false
 
       @cancelAnyScheduledDrag()
 
@@ -280,8 +281,13 @@ jQuery ->
           left: @helperStartPosition.x + delta.x
           top: @helperStartPosition.y + delta.y
 
+        # Calculate the target offset
+        targetOffset =
+          top: @elementStartPageOffset.y + (e.pageY - @mousedownEvent.pageY)
+          left: @elementStartPageOffset.x + (e.pageX - @mousedownEvent.pageX)
+
         # Call any user-supplied drag callback; cancel the drag if it returns false
-        if @getConfig().drag?(e, @getEventMetadata(targetPosition)) is false
+        if @getConfig().drag?(e, @getEventMetadata(targetPosition, targetOffset)) is false
           @handleDragStop(e)
           return
 
@@ -369,12 +375,14 @@ jQuery ->
       # Return the matrix
       computedStyle.WebkitTransform or computedStyle.msTransform or computedStyle.MozTransform or computedStyle.OTransform or 'none'
 
-    getEventMetadata: (position) ->
+    getEventMetadata: (position, offset) ->
       # Report the position of the helper
       position: position or {
         top: parseFloat(@$helper.css('top')) or 0
         left: parseFloat(@$helper.css('left')) or 0
       }
+      # Report the offset of the helper
+      offset: offset or @$helper.offset()
 
     getOffsetParentOrTransformedParent: (element) ->
       $element = $(element)
