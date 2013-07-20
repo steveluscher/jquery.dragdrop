@@ -14,6 +14,20 @@ class this.SpecHelper
       clientY: center.y
     center
 
+  @metadataSpecs: (options = {}) ->
+    options = SpecHelper.applyDefaults options,
+      spyName: 'callback'
+      argNumber: 1
+
+    it 'should be an object', ->
+      expect(@[options.spyName].mostRecentCall.args[options.argNumber]).toEqual(jasmine.any(Object))
+
+    if options.expectedPosition
+      it 'should have a position property that represents the position of the helper', ->
+        expectedPosition = options.expectedPosition.call(this)
+        actualPosition = @[options.spyName].mostRecentCall.args[options.argNumber].position
+        expect(actualPosition).toEqual(expectedPosition)
+
   @isNumber: (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
   @isNaN: (obj) -> @isNumber(obj) and window.isNaN(obj)
   @applyDefaults: (obj, sources...) ->
