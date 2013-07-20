@@ -154,11 +154,19 @@ jQuery ->
       false
 
     handleDocumentMouseMove: (e) =>
-      # Trigger the start event, once
-      @handleDragStart(e) unless @dragStarted
+      if @dragStarted
+        # Trigger the drag event
+        @handleDrag(e)
+      else
+        # Trigger the start event
+        @handleDragStart(e)
 
-      # Trigger the drag event
-      @handleDrag(e) if @dragStarted
+        if @dragStarted
+          # Trigger the drag event
+          @handleDrag(e)
+
+          # Broadcast to interested subscribers that this droppable is now in the air
+          @broadcast('start', e)
 
     handleDocumentMouseUp: (e) =>
       isLeftButton = e.which is 1
@@ -230,7 +238,9 @@ jQuery ->
       eventMetadata = @getEventMetadata(startPosition, startOffset)
 
       # Call any user-supplied drag callback; cancel the start if it returns false
-      return if @getConfig().start?(e, eventMetadata) is false
+      if @getConfig().start?(e, eventMetadata) is false
+        @handleDragStop(e)
+        return
 
       @cancelAnyScheduledDrag()
 
@@ -266,9 +276,6 @@ jQuery ->
 
       # Mark the drag as having started
       @dragStarted = true
-
-      # Broadcast to interested subscribers that this droppable is now in the air
-      @broadcast('start', e)
 
     handleDrag: (e) ->
       @scheduleDrag =>
