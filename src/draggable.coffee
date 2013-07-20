@@ -162,8 +162,8 @@ jQuery ->
         @handleDragStart(e)
 
         if @dragStarted
-          # Trigger the drag event
-          @handleDrag(e)
+          # Trigger the drag event immediately
+          @handleDrag(e, true)
 
           # Broadcast to interested subscribers that this droppable is now in the air
           @broadcast('start', e)
@@ -263,10 +263,9 @@ jQuery ->
         .css(pointerEvents: 'none')
 
       unless @$helper is @$element
-        requestAnimationFrame =>
-          @$helper
-            # Append the helper to the body
-            .appendTo('body')
+        @$helper
+          # Append the helper to the body
+          .appendTo('body')
 
       # Map the mouse coordinates into the helper's coordinate space
       {
@@ -277,8 +276,8 @@ jQuery ->
       # Mark the drag as having started
       @dragStarted = true
 
-    handleDrag: (e) ->
-      @scheduleDrag =>
+    handleDrag: (e, immediate = false) ->
+      dragHandler = =>
         # Map the mouse coordinates into the element's coordinate space
         @localMousePosition = convertPointFromPageToNode @parent, new Point(e.pageX, e.pageY)
 
@@ -307,6 +306,13 @@ jQuery ->
 
         # Move the helper
         @$helper.css eventMetadata.position
+
+      if immediate
+        # Call the drag handler right away
+        dragHandler()
+      else
+        # Schedule the drag handler to be called when the next frame is about to be drawn
+        @scheduleDrag dragHandler
 
     handleDragStop: (e) ->
       @cancelAnyScheduledDrag()
