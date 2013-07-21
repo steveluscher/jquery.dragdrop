@@ -434,8 +434,12 @@ describe 'A draggable', ->
 
             if typeof helperConfig is 'function'
               describe 'the helper-factory function', ->
-                it 'should be called with the draggable and the event as arguments', ->
-                  expect(helperConfig).toHaveBeenCalledWith(@$draggable.get(0), jasmine.any(jQuery.Event))
+
+                it 'should be called with a jQuery object and the event as arguments', ->
+                  expect(helperConfig).toHaveBeenCalledWith(jasmine.any(jQuery), jasmine.any(jQuery.Event))
+
+                it 'should be receive the draggable as its first argument', ->
+                  expect(helperConfig.mostRecentCall.args[0]).toBe(@$draggable)
 
             describe 'the helper', ->
 

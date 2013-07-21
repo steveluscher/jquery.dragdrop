@@ -88,7 +88,7 @@ jQuery ->
       # Helper options:
       # * original: drag the actual element
       # * clone: stick a copy of the element to the mouse
-      # * (element, e) ->: stick the return value of this function to the mouse; must return something that produces a DOM element when run through jQuery
+      # * ($draggable, e) ->: stick the return value of this function to the mouse; must return something that produces a DOM element when run through jQuery
       helper: 'original'
 
       # Stack options:
@@ -433,7 +433,7 @@ jQuery ->
 
     synthesizeHelperUsingFactory: (factory, e) ->
       # Run the factory
-      output = factory @$element.get(0), e
+      output = factory @$element, e
 
       # Process the output with jQuery
       helper = $(output).first()
