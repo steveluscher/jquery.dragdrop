@@ -1,38 +1,39 @@
-describe 'A draggable', ->
-  options =
-    dragDistance: 50
-    alternateDraggableClass: 'alternateDraggableClass'
-    alternateDraggingClass: 'alternateDraggingClass'
-    ineffectualButtons:
-      'middle': jQuery.simulate.buttonCode.MIDDLE
-      'right': jQuery.simulate.buttonCode.RIGHT
-    scrollOffsetVariants:
-      'no': 0
-      'a non-zero': 50
-    handleConfigVariants:
-      'selector': -> '#handle'
-      'DOM element': -> $('#handle').get(0)
-      'jQuery object': -> $('#handle')
-    helperConfigVariants:
-      'clone': 'clone'
-      'a factory method that produces something DOM-element-like': jasmine.createSpy('helperFactory').andReturn($('<div>').text('I’m a helper'))
-    elementPositionVariants: ['static', 'absolute', 'fixed']
-    getTransformCSS: (scale, skew, rotate, translate, originXPercent = 1, originYPercent = 1) ->
-      originString = "#{originXPercent * 100}% #{originYPercent * 100}%"
-      transformString = "rotate(#{rotate}deg) scale(#{scale}) skew(#{skew}deg) translate(#{translate}px)"
-      {
-        'transform-origin': originString
-        '-webkit-transform-origin': originString
-        '-moz-transform-origin': originString
-        '-o-transform-origin': originString
-        '-ms-transform-origin': originString
+options =
+  dragDistance: 50
+  alternateDraggableClass: 'alternateDraggableClass'
+  alternateDraggingClass: 'alternateDraggingClass'
+  ineffectualButtons:
+    'middle': jQuery.simulate.buttonCode.MIDDLE
+    'right': jQuery.simulate.buttonCode.RIGHT
+  scrollOffsetVariants:
+    'no': 0
+    'a non-zero': 50
+  handleConfigVariants:
+    'selector': -> '#handle'
+    'DOM element': -> $('#handle').get(0)
+    'jQuery object': -> $('#handle')
+  helperConfigVariants:
+    'clone': 'clone'
+    'a factory method that produces something DOM-element-like': jasmine.createSpy('helperFactory').andReturn($(sandbox()).text('I’m a helper'))
+  elementPositionVariants: ['static', 'absolute', 'fixed']
+  getTransformCSS: (scale, skew, rotate, translate, originXPercent = 1, originYPercent = 1) ->
+    originString = "#{originXPercent * 100}% #{originYPercent * 100}%"
+    transformString = "rotate(#{rotate}deg) scale(#{scale}) skew(#{skew}deg) translate(#{translate}px)"
+    {
+      'transform-origin': originString
+      '-webkit-transform-origin': originString
+      '-moz-transform-origin': originString
+      '-o-transform-origin': originString
+      '-ms-transform-origin': originString
 
-        'transform': transformString
-        '-webkit-transform': transformString
-        '-moz-transform': transformString
-        '-o-transform': transformString
-        '-ms-transform': transformString
-      }
+      'transform': transformString
+      '-webkit-transform': transformString
+      '-moz-transform': transformString
+      '-o-transform': transformString
+      '-ms-transform': transformString
+    }
+
+describe 'A draggable', ->
 
   describe 'configured using the default options', ->
 
