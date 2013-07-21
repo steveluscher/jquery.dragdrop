@@ -1,12 +1,15 @@
-#draggable_static { }
-#draggable_absolute {
+.absolute {
   position: absolute;
   top: 150px;
   left: 250px;
   width: 100px;
   height: 100px;
 }
-#draggable_fixed {
+#droppable_absolute {
+  left: auto;
+  right: 250px;
+}
+.fixed {
   position: fixed;
   top: 25px;
   left: 250px;
@@ -22,16 +25,6 @@
 }
 .ui-draggable, .ui-draggable-dragging {
   z-index: 20;
-}
-
-#droppable {
-  position: absolute;
-  top: 150px;
-  right: 250px;
-  width: 100px;
-  height: 100px;
-
-  box-sizing: padding-box;
 }
 
 .ui-droppable {

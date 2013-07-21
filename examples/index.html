@@ -38,14 +38,14 @@
     $('#draggable_helper_factory_broken').draggable(helper: (element, e) -> 'Nothing that quacks like a DOM element')
 
     # Initialize the droppable
-    $('#droppable').droppable()
+    $('#droppable_absolute').droppable()
 
     # Initialize the funhouse draggable/droppable
     $('.funhouse #draggable_static').draggable()
     $('.funhouse #draggable_annoying').draggable()
     $('.funhouse #draggable_fixed').draggable()
     $('.funhouse #draggable_absolute').draggable()
-    $('.funhouse #droppable').droppable()
+    $('.funhouse #droppable_absolute').droppable()
   </script>
 
 </head>
@@ -57,13 +57,13 @@
     </p>
   </div>
 
-  <div id="draggable_absolute">
+  <div id="draggable_absolute" class="absolute">
     <p>
       Drag me, absolutely
     </p>
   </div>
 
-  <div id="draggable_fixed">
+  <div id="draggable_fixed" class="fixed">
     <p>
       Drag me, fixedly
     </p>
@@ -94,9 +94,9 @@
     </p>
   </div>
 
-  <div id="droppable">
+  <div id="droppable_absolute" class="absolute">
     <p>
-      Drop here
+      Drop here, absolutely
     </p>
   </div>
 
@@ -107,13 +107,13 @@
       </p>
     </div>
 
-    <div id="draggable_absolute">
+    <div id="draggable_absolute" class="absolute">
       <p>
         Drag me absolutely in the funhouse
       </p>
     </div>
 
-    <div id="draggable_fixed">
+    <div id="draggable_fixed" class="fixed">
       <p>
         Drag me fixedly in the funhouse
       </p>
@@ -125,9 +125,9 @@
       </p>
     </div>
 
-    <div id="droppable">
+    <div id="droppable_absolute" class="absolute">
       <p>
-        Dropping in the funhouse
+        Dropping in the funhouse, absolutely
       </p>
     </div>
   </section>

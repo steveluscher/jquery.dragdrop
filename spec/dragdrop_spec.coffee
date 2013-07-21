@@ -10,8 +10,8 @@ describe 'A droppable', ->
   describe 'configured using the default options', ->
 
     beforeEach ->
-      loadFixtures 'droppable.html'
-      @$droppable = $('#droppable').droppable()
+      loadFixtures 'droppable_absolute.html'
+      @$droppable = $('#droppable_absolute').droppable()
 
     describe 'with a draggable hovering above it', ->
 
@@ -37,8 +37,8 @@ describe 'A droppable', ->
   describe 'configured using the hoverClass option', ->
 
     beforeEach ->
-      loadFixtures 'droppable.html'
-      @$droppable = $('#droppable').droppable(hoverClass: options.alternateHoverClass)
+      loadFixtures 'droppable_absolute.html'
+      @$droppable = $('#droppable_absolute').droppable(hoverClass: options.alternateHoverClass)
 
     describe 'with a draggable hovering above it', ->
 
@@ -69,8 +69,8 @@ describe 'A droppable', ->
         describe "such as #{variant}", ->
 
           beforeEach ->
-            loadFixtures 'droppable.html'
-            @$droppable = $('#droppable').droppable(accept: acceptConfig)
+            loadFixtures 'droppable_absolute.html'
+            @$droppable = $('#droppable_absolute').droppable(accept: acceptConfig)
 
           describe 'with an acceptable draggable hovering above it', ->
 
@@ -126,8 +126,8 @@ describe 'A droppable', ->
     describe 'such as an over callback', ->
 
       beforeEach ->
-        loadFixtures 'droppable.html'
-        @$droppable = $('#droppable').droppable(over: @callback)
+        loadFixtures 'droppable_absolute.html'
+        @$droppable = $('#droppable_absolute').droppable(over: @callback)
 
       describe 'having had a draggable come to hover above it', ->
 
@@ -168,8 +168,8 @@ describe 'A droppable', ->
     describe 'such as an out callback', ->
 
       beforeEach ->
-        loadFixtures 'droppable.html'
-        @$droppable = $('#droppable').droppable(out: @callback)
+        loadFixtures 'droppable_absolute.html'
+        @$droppable = $('#droppable_absolute').droppable(out: @callback)
 
       describe 'having had a draggable come to hover above it', ->
 
@@ -213,8 +213,8 @@ describe 'A droppable', ->
     describe 'such as a drop callback', ->
 
       beforeEach ->
-        loadFixtures 'droppable.html'
-        @$droppable = $('#droppable').droppable(drop: @callback)
+        loadFixtures 'droppable_absolute.html'
+        @$droppable = $('#droppable_absolute').droppable(drop: @callback)
 
       describe 'having had a draggable dropped on it', ->
 
