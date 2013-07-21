@@ -267,7 +267,7 @@ jQuery ->
         # Kill pointer events while in mid-drag
         .css(pointerEvents: 'none')
 
-      unless @$helper is @$element
+      if helperIsSynthesized
         @$helper
           # Append the helper to the body
           .appendTo('body')
