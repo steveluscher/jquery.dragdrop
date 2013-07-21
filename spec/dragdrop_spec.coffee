@@ -1,6 +1,11 @@
 describe 'A droppable', ->
   options =
     alternateHoverClass: 'alternateHoverClass'
+    acceptableClass: 'acceptable'
+
+  options.acceptConfigVariants =
+    'a string representing a selector': ".#{options.acceptableClass}"
+    'an acceptance function': jasmine.createSpy('acceptanceFunction').andCallFake ($draggable) -> $draggable.is(".#{options.acceptableClass}")
 
   describe 'configured using the default options', ->
 
@@ -55,6 +60,63 @@ describe 'A droppable', ->
 
       it 'should possess the supplied hover class', ->
         expect(@$droppable).toHaveClass options.alternateHoverClass
+
+  describe 'configured with the accept option', ->
+
+    for variant, acceptConfig of options.acceptConfigVariants
+      do (variant, acceptConfig) ->
+
+        describe "such as #{variant}", ->
+
+          beforeEach ->
+            loadFixtures 'droppable.html'
+            @$droppable = $('#droppable').droppable(accept: acceptConfig)
+
+          describe 'with an acceptable draggable hovering above it', ->
+
+            beforeEach ->
+              appendLoadFixtures 'draggable_static.html'
+              @$draggable = $('#draggable_static').addClass(options.acceptableClass).draggable()
+
+              # Find the center of the elements
+              draggableCenter = SpecHelper.findCenterOf @$draggable
+              droppableCenter = SpecHelper.findCenterOf @$droppable
+
+              # Drag the draggable over top of the droppable
+              @$draggable.simulate 'mousedown',
+                clientX: draggableCenter.x
+                clientY: draggableCenter.y
+              $(document).simulate 'mousemove',
+                clientX: droppableCenter.x
+                clientY: droppableCenter.y
+
+            if typeof acceptConfig is 'function'
+              it 'should call the acceptance function with the draggable as its first argument', ->
+                expect(acceptConfig.mostRecentCall.args[0]).toBe(@$draggable)
+
+            it 'should possess the default hover class', ->
+              expect(@$droppable).toHaveClass $.droppable::defaults['hoverClass']
+
+          describe 'with an unacceptable draggable hovering above it', ->
+
+            beforeEach ->
+              appendLoadFixtures 'draggable_static.html'
+              @$draggable = $('#draggable_static').draggable()
+
+              # Find the center of the elements
+              draggableCenter = SpecHelper.findCenterOf @$draggable
+              droppableCenter = SpecHelper.findCenterOf @$droppable
+
+              # Drag the draggable over top of the droppable
+              @$draggable.simulate 'mousedown',
+                clientX: draggableCenter.x
+                clientY: draggableCenter.y
+              $(document).simulate 'mousemove',
+                clientX: droppableCenter.x
+                clientY: droppableCenter.y
+
+            it 'should not possess the default hover class', ->
+              expect(@$droppable).not.toHaveClass $.droppable::defaults['hoverClass']
 
   describe 'configured with callbacks', ->
 

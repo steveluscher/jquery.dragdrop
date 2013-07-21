@@ -21,11 +21,20 @@ jQuery ->
       # Applied when a draggable is hovering over this droppable
       hoverClass: 'ui-droppable-hovered'
 
+      # Accept options:
+      # * selector string: original draggable DOM element must match this selector
+      # * ($draggable) ->: a function that returns true if the draggable is acceptable to this droppable
+      accept: -> true
+
     #
     # Initialization
     #
 
     constructor: (element, @options = {}) ->
+      # Coerce the accept option to be a function if it appears to be a selector string
+      if typeof (selector = @options.accept) is 'string'
+        @options.accept = ($draggable) => $draggable.is(selector)
+
       super
 
       throw new Error '[jQuery DragDrop – Droppable] Missing dependency jQuery Draggable' unless jQuery.draggable?
@@ -106,6 +115,9 @@ jQuery ->
 
     handleOver: (e) =>
       return unless @dragStarted and not @isDropTarget
+
+      # Ensure that this draggable is acceptable to this droppable
+      return unless @getConfig().accept(@draggable.$element)
 
       # Lazily attach a mouse leave listener to the element
       @setupMouseLeaveListener() unless @mouseLeaveListenerSetupPerformed
