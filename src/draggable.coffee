@@ -91,6 +91,11 @@ jQuery ->
       # * (element, e) ->: stick the return value of this function to the mouse; must return something that produces a DOM element when run through jQuery
       helper: 'original'
 
+      # Stack options:
+      # * selector string: elements that match this selector are members of the stack
+      # * ($draggable, e) ->: a function that returns a jQuery collection, or a collection of DOM elements
+      stack: false
+
     #
     # Initialization
     #
@@ -267,6 +272,8 @@ jQuery ->
           # Append the helper to the body
           .appendTo('body')
 
+      @moveHelperToTopOfStack(stackConfig, e) if not helperIsSynthesized and stackConfig = @getConfig().stack
+
       # Map the mouse coordinates into the helper's coordinate space
       {
         x: @mousedownEvent.LocalX
@@ -435,6 +442,23 @@ jQuery ->
 
       # Post process the helper element
       @prepareHelper helper.first()
+
+    moveHelperToTopOfStack: (stackConfig, e) ->
+      # Get the members of the stack
+      $stackMembers = $(stackConfig?(@$helper, e) or stackConfig)
+      return unless $stackMembers.length
+
+      # Sort the stack members by z-index
+      sortedStackMembers = $stackMembers.get().sort (a, b) ->
+        (parseInt($(b).css('zIndex'), 10) or 0) - (parseInt($(a).css('zIndex'), 10) or 0)
+
+      return if @$helper.is(topStackMember = sortedStackMembers[0])
+
+      # Get the top element's index
+      topIndex = $(topStackMember).css('zIndex')
+
+      # Move this helper to the top of the stack
+      @$helper.css('zIndex', parseInt(topIndex, 10) + 1)
 
     positionToPoint: (position) ->
       new Point position.left, position.top

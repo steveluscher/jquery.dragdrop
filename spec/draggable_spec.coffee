@@ -2,6 +2,7 @@ options =
   dragDistance: 50
   alternateDraggableClass: 'alternateDraggableClass'
   alternateDraggingClass: 'alternateDraggingClass'
+  stackMemberClass: 'stackMember'
   ineffectualButtons:
     'middle': jQuery.simulate.buttonCode.MIDDLE
     'right': jQuery.simulate.buttonCode.RIGHT
@@ -32,6 +33,11 @@ options =
       '-o-transform': transformString
       '-ms-transform': transformString
     }
+
+options.stackConfigVariants =
+  'a selector': ".#{options.stackMemberClass}"
+  'a factory method that produces a collection of DOM elements': jasmine.createSpy('stackConfigFunction').andCallFake ($draggable, e) -> $(".#{options.stackMemberClass}").get()
+  'a factory method that produces a jQuery collection': jasmine.createSpy('stackConfigFunction').andCallFake ($draggable, e) -> $(".#{options.stackMemberClass}")
 
 describe 'A draggable', ->
 
@@ -852,3 +858,100 @@ describe 'A draggable', ->
 
                  it 'should find itself the drag distance from its original left offset', ->
                    expect(@$draggable.offset().left).toBeCloseTo(@originalOffset.left + options.dragDistance, 0)
+
+describe 'A stack of draggables', ->
+
+  beforeEach ->
+    # Load three absolutely positioned fixtures
+    f = 'draggable_absolute.html'
+    loadFixtures f, f, f
+
+    # Define the indices they can have
+    @indices =
+      bottom: 'auto'
+      middle: '1'
+      top: '3'
+
+    # Add the stack member class to each
+    $('[id="draggable_absolute"]').addClass(options.stackMemberClass)
+
+    # Stack them
+    @$bottomDraggable = $('[id="draggable_absolute"]:eq(0)').css(zIndex: @indices.bottom)
+    @$middleDraggable = $('[id="draggable_absolute"]:eq(1)').css(zIndex: @indices.middle)
+    @$topDraggable = $('[id="draggable_absolute"]:eq(2)').css(zIndex: @indices.top)
+
+  describe 'configured with the stack option', ->
+
+    for variant, stackConfig of options.stackConfigVariants
+      do (variant, stackConfig) ->
+
+        describe "such as #{variant}", ->
+
+          beforeEach ->
+            @$bottomDraggable.draggable(stack: stackConfig)
+            @$middleDraggable.draggable(stack: stackConfig)
+            @$topDraggable.draggable(stack: stackConfig)
+
+          if typeof stackConfig is 'function'
+            describe 'after dragging any draggable', ->
+
+              beforeEach ->
+                @$topDraggable.simulate 'drag',
+                  dx: options.dragDistance
+                  dy: options.dragDistance
+
+              describe 'the stack config function', ->
+
+                it 'should be called with a jQuery object and the event as arguments', ->
+                  expect(stackConfig).toHaveBeenCalledWith(jasmine.any(jQuery), jasmine.any(jQuery.Event))
+
+                it 'should be receive the draggable as its first argument', ->
+                  expect(stackConfig.mostRecentCall.args[0]).toBe(@$topDraggable)
+
+          describe 'after dragging the top draggable', ->
+
+            beforeEach ->
+              @$topDraggable.simulate 'drag',
+                dx: options.dragDistance
+                dy: options.dragDistance
+
+            it 'should not have changed the z-index of the bottom draggable', ->
+              expect(@$bottomDraggable).toHaveCss { zIndex: @indices.bottom }
+
+            it 'should not have changed the z-index of the middle draggable', ->
+              expect(@$middleDraggable).toHaveCss { zIndex: @indices.middle }
+
+            it 'should not have changed the z-index of the top draggable', ->
+              expect(@$topDraggable).toHaveCss { zIndex: @indices.top }
+
+          describe 'after dragging the middle draggable', ->
+
+            beforeEach ->
+              @$middleDraggable.simulate 'drag',
+                dx: options.dragDistance
+                dy: options.dragDistance
+
+            it 'should not have changed the z-index of the bottom draggable', ->
+              expect(@$bottomDraggable).toHaveCss { zIndex: @indices.bottom }
+
+            it 'should have changed the z-index of the middle draggable to that of the top draggable plus one', ->
+              expect(@$middleDraggable).toHaveCss { zIndex: "#{parseFloat(@indices.top) + 1}" }
+
+            it 'should not have changed the z-index of the top draggable', ->
+              expect(@$topDraggable).toHaveCss { zIndex: @indices.top }
+
+          describe 'after dragging the bottom draggable', ->
+
+            beforeEach ->
+              @$bottomDraggable.simulate 'drag',
+                dx: options.dragDistance
+                dy: options.dragDistance
+
+            it 'should have changed the z-index of the bottom draggable to that of the top draggable plus one', ->
+              expect(@$bottomDraggable).toHaveCss { zIndex: "#{parseFloat(@indices.top) + 1}" }
+
+            it 'should not have changed the z-index of the middle draggable', ->
+              expect(@$middleDraggable).toHaveCss { zIndex: @indices.middle }
+
+            it 'should not have changed the z-index of the top draggable', ->
+              expect(@$topDraggable).toHaveCss { zIndex: @indices.top }
