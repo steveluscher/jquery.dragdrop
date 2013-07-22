@@ -103,6 +103,12 @@ describe 'A draggable', ->
             describe 'when dragged', ->
 
               beforeEach ->
+                @originalPosition =
+                  top: parseFloat(@$draggable.css('top')) or 0
+                  left: parseFloat(@$draggable.css('left')) or 0
+
+                @originalOffset = @$draggable.offset()
+
                 # Drag the draggable a standard distance
                 @$draggable.simulate 'drag',
                   dx: options.dragDistance
@@ -182,6 +188,7 @@ describe 'A draggable', ->
           describe 'the second parameter to the start callback', ->
 
             SpecHelper.metadataSpecs.call this,
+              expectedOriginalPosition: -> @originalPosition
               expectedPosition: -> @originalPosition
               expectedOffset: -> @originalOffset
 
@@ -226,6 +233,10 @@ describe 'A draggable', ->
         describe 'when dragged', ->
 
           beforeEach ->
+            @originalPosition =
+              top: parseFloat(@$draggable.css('top')) or 0
+              left: parseFloat(@$draggable.css('left')) or 0
+
             @moves = 10
 
             # Drag the draggable a standard distance
@@ -242,6 +253,7 @@ describe 'A draggable', ->
           describe 'the second parameter to the drag callback', ->
 
             SpecHelper.metadataSpecs.call this,
+              expectedOriginalPosition: -> @originalPosition
               expectedPosition: ->
                 top: parseFloat(@$draggable.css('top')) or 0
                 left: parseFloat(@$draggable.css('left')) or 0
@@ -298,6 +310,10 @@ describe 'A draggable', ->
       describe 'after having been dragged', ->
 
         beforeEach ->
+          @originalPosition =
+            top: parseFloat(@$draggable.css('top')) or 0
+            left: parseFloat(@$draggable.css('left')) or 0
+
           # Drag the draggable a standard distance
           @$draggable.simulate 'drag',
             dx: options.dragDistance
@@ -311,6 +327,7 @@ describe 'A draggable', ->
         describe 'the second parameter to the stop callback', ->
 
           SpecHelper.metadataSpecs.call this,
+            expectedOriginalPosition: -> @originalPosition
             expectedPosition: ->
               top: parseFloat(@$draggable.css('top')) or 0
               left: parseFloat(@$draggable.css('left')) or 0

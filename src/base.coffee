@@ -24,6 +24,12 @@ class jQuery.dragdrop
       # Report the offset of the helper
       offset: offset or @$helper.offset()
 
+    if @helperStartPosition? or @draggable?
+      # Supply the original position of the drag helper
+      metadata.originalPosition =
+        top: (@helperStartPosition or @draggable.helperStartPosition).y
+        left: (@helperStartPosition or @draggable.helperStartPosition).x
+
     # Supply a reference to the helper's DOM element, if available
     metadata.helper = @$helper if @$helper?
 

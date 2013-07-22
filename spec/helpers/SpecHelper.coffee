@@ -22,6 +22,12 @@ class this.SpecHelper
     it 'should be an object', ->
       expect(@[options.spyName].mostRecentCall.args[options.argNumber]).toEqual(jasmine.any(Object))
 
+    if options.expectedOriginalPosition
+      it 'should have an originalPposition property that represents the start position of the helper', ->
+        expectedOriginalPosition = options.expectedOriginalPosition.call(this)
+        actualOriginalPosition = @[options.spyName].mostRecentCall.args[options.argNumber].originalPosition
+        expect(actualOriginalPosition).toEqual(expectedOriginalPosition)
+
     if options.expectedPosition
       it 'should have a position property that represents the position of the helper', ->
         expectedPosition = options.expectedPosition.call(this)
