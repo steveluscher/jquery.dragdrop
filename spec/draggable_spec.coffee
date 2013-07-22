@@ -89,6 +89,11 @@ describe 'A draggable', ->
 
         describe "such as a #{callbackType} callback", ->
 
+          beforeEach ->
+            # Craft a callback that stores the value of "this" somewhere we can analyze it later on
+            self = this
+            @callback.andCallFake -> self.valueOfThis = this
+
           describe 'that does not return false', ->
 
             beforeEach ->
@@ -107,6 +112,9 @@ describe 'A draggable', ->
 
                 it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
                   expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
+
+                it 'should have been bound to the draggable’s plugin instance', ->
+                  expect(@valueOfThis).toBe(@$draggable.data('draggable'))
 
     describe 'such as a start callback', ->
 

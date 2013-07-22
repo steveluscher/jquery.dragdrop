@@ -122,8 +122,14 @@ jQuery ->
       this
 
     setupElement: ->
+      config = @getConfig()
+
       # Position the draggable relative if it's currently statically positioned
-      @$element.css(position: 'relative') if @getConfig().helper is 'original' and @$element.css('position') is 'static'
+      @$element.css(position: 'relative') if config.helper is 'original' and @$element.css('position') is 'static'
+
+      # Bind any supplied callbacks to this plugin
+      for callbackName in ['start', 'drag', 'stop']
+        config[callbackName] = config[callbackName].bind(this) if typeof config[callbackName] is 'function'
 
       # Done!
       @setupPerformed = true
@@ -192,6 +198,9 @@ jQuery ->
     #
 
     handleDragStart: (e) ->
+      # Lazily perform setup on the element
+      @setupElement() unless @setupPerformed
+
       # Will we use the original element as the helper, or will we synthesize a new one?
       helperConfig = @getConfig().helper
       helperIsSynthesized = helperConfig isnt 'original'
@@ -248,9 +257,6 @@ jQuery ->
         return
 
       @cancelAnyScheduledDrag()
-
-      # Lazily perform setup on the element
-      @setupElement() unless @setupPerformed
 
       # Save the original value of the pointer-events CSS property
       @originalPointerEventsPropertyValue = @$element.css('pointerEvents')

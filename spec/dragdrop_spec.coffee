@@ -121,7 +121,9 @@ describe 'A droppable', ->
   describe 'configured with callbacks', ->
 
     beforeEach ->
-      @callback = jasmine.createSpy('callback')
+      # Craft a callback that stores the value of "this" somewhere we can analyze it later on
+      self = this
+      @callback = jasmine.createSpy('callback').andCallFake -> self.valueOfThis = this
 
     describe 'such as an over callback', ->
 
@@ -154,6 +156,9 @@ describe 'A droppable', ->
 
           it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
             expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
+
+          it 'should have been bound to the droppable’s plugin instance', ->
+            expect(@valueOfThis).toBe(@$droppable.data('droppable'))
 
         describe 'the second parameter to the over callback', ->
 
@@ -210,6 +215,9 @@ describe 'A droppable', ->
             it 'should have been called with the jQuery mouse event as the first parameter', ->
               expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
 
+            it 'should have been bound to the droppable’s plugin instance', ->
+              expect(@valueOfThis).toBe(@$droppable.data('droppable'))
+
     describe 'such as a drop callback', ->
 
       beforeEach ->
@@ -246,6 +254,9 @@ describe 'A droppable', ->
 
           it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
             expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
+
+          it 'should have been bound to the droppable’s plugin instance', ->
+            expect(@valueOfThis).toBe(@$droppable.data('droppable'))
 
         describe 'the second parameter to the drop callback', ->
 

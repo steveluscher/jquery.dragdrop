@@ -53,6 +53,16 @@ jQuery ->
       # Make the plugin chainable
       this
 
+    setupElement: ->
+      config = @getConfig()
+
+      # Bind any supplied callbacks to this plugin
+      for callbackName in ['over', 'out', 'drop']
+        config[callbackName] = config[callbackName].bind(this) if typeof config[callbackName] is 'function'
+
+      # Done!
+      @setupPerformed = true
+
     setupMouseEnterListener: ->
       # Attach a handler to catch mouse enter events
       @$element.on
@@ -72,6 +82,9 @@ jQuery ->
     #
 
     handleDraggableStart: (e, draggable) =>
+      # Lazily perform setup on the element
+      @setupElement() unless @setupPerformed
+
       # Lazily attach a mouse enter listener to the element
       @setupMouseEnterListener() unless @mouseEnterListenerSetupPerformed
 
