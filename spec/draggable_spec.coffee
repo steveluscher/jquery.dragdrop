@@ -3,6 +3,7 @@ options =
   alternateDraggableClass: 'alternateDraggableClass'
   alternateDraggingClass: 'alternateDraggingClass'
   stackMemberClass: 'stackMember'
+  callbackTypes: ['start', 'drag', 'stop']
   ineffectualButtons:
     'middle': jQuery.simulate.buttonCode.MIDDLE
     'right': jQuery.simulate.buttonCode.RIGHT
@@ -83,6 +84,30 @@ describe 'A draggable', ->
     beforeEach ->
       @callback = jasmine.createSpy('callback')
 
+    for callbackType in options.callbackTypes
+      do (callbackType) ->
+
+        describe "such as a #{callbackType} callback", ->
+
+          describe 'that does not return false', ->
+
+            beforeEach ->
+              loadFixtures 'draggable_static.html'
+              @$draggable = $('#draggable_static').draggable(drag: @callback)
+
+            describe 'when dragged', ->
+
+              beforeEach ->
+                # Drag the draggable a standard distance
+                @$draggable.simulate 'drag',
+                  dx: options.dragDistance
+                  dy: options.dragDistance
+
+              describe "the #{callbackType} callback", ->
+
+                it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
+                  expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
+
     describe 'such as a start callback', ->
 
       describe 'that returns false', ->
@@ -146,9 +171,6 @@ describe 'A draggable', ->
             it 'should have been called once', ->
               expect(@callback.callCount).toBe(1)
 
-            it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
-              expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
-
           describe 'the second parameter to the start callback', ->
 
             SpecHelper.metadataSpecs.call this,
@@ -208,9 +230,6 @@ describe 'A draggable', ->
 
             it 'should have been called once for every mouse movement', ->
               expect(@callback.callCount).toBe(@moves)
-
-            it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
-              expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
 
           describe 'the second parameter to the drag callback', ->
 
@@ -280,9 +299,6 @@ describe 'A draggable', ->
 
           it 'should have been called once', ->
             expect(@callback.callCount).toBe(1)
-
-          it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
-            expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
 
         describe 'the second parameter to the stop callback', ->
 
