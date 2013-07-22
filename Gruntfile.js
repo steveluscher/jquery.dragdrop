@@ -13,19 +13,19 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     uglify: {
       draggablePlugin: {
-        files: { 'dist/draggable.min.js': 'dist/draggable.js' },
+        files: { 'dist/jquery.draggable.min.js': 'dist/jquery.draggable.js' },
         options: { banner: getBanner('Draggable') }
       },
       droppablePlugin: {
-        files: { 'dist/droppable.min.js': 'dist/droppable.js' },
+        files: { 'dist/jquery.droppable.min.js': 'dist/jquery.droppable.js' },
         options: { banner: getBanner('Droppable') }
       }
     },
     coffee: {
       plugin: {
         files: {
-          'dist/draggable.js': ['src/base.coffee', 'src/draggable.coffee'],
-          'dist/droppable.js': ['src/base.coffee', 'src/droppable.coffee']
+          'dist/jquery.draggable.js': ['src/base.coffee', 'src/draggable.coffee'],
+          'dist/jquery.droppable.js': ['src/base.coffee', 'src/droppable.coffee']
         }
       },
       specs: {
