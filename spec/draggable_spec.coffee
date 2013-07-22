@@ -18,6 +18,9 @@ options =
     'clone': 'clone'
     'a factory method that produces something DOM-element-like': jasmine.createSpy('helperFactory').andReturn($(sandbox()).text('I’m a helper'))
   elementPositionVariants: ['static', 'absolute', 'fixed']
+  elementTransformednesses:
+    'non-transformed': -> {}
+    'transformed': -> options.getTransformCSS 0.45, 10, 20, 100, 20, 40
   elementPositionTypes:
     'explicitly': {}
     'implicitly':
@@ -817,60 +820,36 @@ describe 'A draggable', ->
 
       describe "of the #{positionVariant}#{if positionVariant is 'static' then 'al' else ''}ly positioned sort", ->
 
-        for positionType, positionValues of options.elementPositionTypes
-          do (positionType, positionValues) ->
+        beforeEach ->
+          loadFixtures "draggable_#{positionVariant}.html"
+          @$draggable = $("#draggable_#{positionVariant}").draggable()
 
-            describe "with an #{positionType} defined position", ->
+        for elementTransformedness, transformCSS of options.elementTransformednesses
+          do (elementTransformedness, transformCSS) ->
+
+            describe "being #{elementTransformedness}", ->
 
               beforeEach ->
-                loadFixtures "draggable_#{positionVariant}.html"
-                @$draggable = $("#draggable_#{positionVariant}").draggable()
+                # Set the transformedness according to the transformedness type
+                @$draggable.css transformCSS()
 
-                # Set the position according to the position type
-                @$draggable.css positionValues
+              for positionType, positionValues of options.elementPositionTypes
+                do (positionType, positionValues) ->
 
-              describe 'when clicked on', ->
-
-                beforeEach ->
-                  spyOnEvent @$draggable, 'mousedown'
-                  SpecHelper.mouseDownInCenterOf @$draggable
-
-                it "should be positioned #{positionVariant}#{if positionVariant is 'static' then 'al' else ''}ly", ->
-                  expect(@$draggable).toHaveCss { position: positionVariant }
-
-              describe 'after having been dragged', ->
-
-                beforeEach ->
-                  @originalOffset = @$draggable.offset()
-
-                  # Drag the draggable a standard distance
-                  @$draggable.simulate 'drag',
-                    dx: options.dragDistance
-                    dy: options.dragDistance
-
-                it 'should find itself the drag distance from its original top offset', ->
-                  expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
-
-                it 'should find itself the drag distance from its original left offset', ->
-                  expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
-
-              for scrollVariant, scrollOffset of options.scrollOffsetVariants
-                do (scrollVariant, scrollOffset) ->
-
-                  describe "in a container with #{scrollVariant} scroll offset", ->
+                  describe "with an #{positionType} defined position", ->
 
                     beforeEach ->
-                      $('#jasmine-fixtures')
-                        # Make sure that something inside the test area is larger than the test area itself
-                        .append('<p style="height: 500px; width: 500px;">')
-                        .css
-                          width: 400
-                          height: 400
-                          # Make sure the transformed element is scrollable
-                          overflow: 'auto'
-                        # Scroll the transformed element
-                        .scrollLeft(scrollOffset)
-                        .scrollTop(scrollOffset)
+                      # Set the position according to the position type
+                      @$draggable.css positionValues
+
+                    describe 'when clicked on', ->
+
+                      beforeEach ->
+                        spyOnEvent @$draggable, 'mousedown'
+                        SpecHelper.mouseDownInCenterOf @$draggable
+
+                      it "should be positioned #{positionVariant}#{if positionVariant is 'static' then 'al' else ''}ly", ->
+                        expect(@$draggable).toHaveCss { position: positionVariant }
 
                     describe 'after having been dragged', ->
 
@@ -883,39 +862,73 @@ describe 'A draggable', ->
                           dy: options.dragDistance
 
                       it 'should find itself the drag distance from its original top offset', ->
-                        expect(@$draggable.offset().top).toBeCloseTo(@originalOffset.top + options.dragDistance, 0)
+                        expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
 
                       it 'should find itself the drag distance from its original left offset', ->
-                        expect(@$draggable.offset().left).toBeCloseTo(@originalOffset.left + options.dragDistance, 0)
+                        expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
-                    describe 'in a transformed coordinate space', ->
+                    for scrollVariant, scrollOffset of options.scrollOffsetVariants
+                      do (scrollVariant, scrollOffset) ->
 
-                      beforeEach ->
-                        # Same values as the .funhouse declaration in spec.css
-                        scale = 0.45
-                        rotate = 10
-                        skew = 20
-                        translate = 100
-                        originXPercent = 20
-                        originYPercent = 40
+                        describe "in a container with #{scrollVariant} scroll offset", ->
 
-                        # Apply scale, skew, translate, and rotate, with a non-default transform-origin
-                        $('#jasmine-fixtures').css options.getTransformCSS(scale, skew, rotate, translate, originXPercent, originYPercent)
+                          beforeEach ->
+                            $('#jasmine-fixtures')
+                              # Make sure that something inside the test area is larger than the test area itself
+                              .append('<p style="height: 500px; width: 500px;">')
+                              .css
+                                width: 400
+                                height: 400
+                                # Make sure the transformed element is scrollable
+                                overflow: 'auto'
+                              # Scroll the transformed element
+                              .scrollLeft(scrollOffset)
+                              .scrollTop(scrollOffset)
 
-                      describe 'after having been dragged', ->
+                          describe 'after having been dragged', ->
 
-                       beforeEach ->
-                         @originalOffset = @$draggable.offset()
-                         # Drag the draggable a standard distance
-                         @$draggable.simulate 'drag',
-                           dx: options.dragDistance
-                           dy: options.dragDistance
+                            beforeEach ->
+                              @originalOffset = @$draggable.offset()
 
-                       it 'should find itself the drag distance from its original top offset', ->
-                         expect(@$draggable.offset().top).toBeCloseTo(@originalOffset.top + options.dragDistance, 0)
+                              # Drag the draggable a standard distance
+                              @$draggable.simulate 'drag',
+                                dx: options.dragDistance
+                                dy: options.dragDistance
 
-                       it 'should find itself the drag distance from its original left offset', ->
-                         expect(@$draggable.offset().left).toBeCloseTo(@originalOffset.left + options.dragDistance, 0)
+                            it 'should find itself the drag distance from its original top offset', ->
+                              expect(@$draggable.offset().top).toBeCloseTo(@originalOffset.top + options.dragDistance, 0)
+
+                            it 'should find itself the drag distance from its original left offset', ->
+                              expect(@$draggable.offset().left).toBeCloseTo(@originalOffset.left + options.dragDistance, 0)
+
+                          describe 'in a transformed coordinate space', ->
+
+                            beforeEach ->
+                              # Same values as the .funhouse declaration in spec.css
+                              scale = 0.45
+                              rotate = 10
+                              skew = 20
+                              translate = 100
+                              originXPercent = 20
+                              originYPercent = 40
+
+                              # Apply scale, skew, translate, and rotate, with a non-default transform-origin
+                              $('#jasmine-fixtures').css options.getTransformCSS(scale, skew, rotate, translate, originXPercent, originYPercent)
+
+                            describe 'after having been dragged', ->
+
+                             beforeEach ->
+                               @originalOffset = @$draggable.offset()
+                               # Drag the draggable a standard distance
+                               @$draggable.simulate 'drag',
+                                 dx: options.dragDistance
+                                 dy: options.dragDistance
+
+                             it 'should find itself the drag distance from its original top offset', ->
+                               expect(@$draggable.offset().top).toBeCloseTo(@originalOffset.top + options.dragDistance, 0)
+
+                             it 'should find itself the drag distance from its original left offset', ->
+                               expect(@$draggable.offset().left).toBeCloseTo(@originalOffset.left + options.dragDistance, 0)
 
 describe 'A stack of draggables', ->
 

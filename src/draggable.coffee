@@ -232,8 +232,26 @@ jQuery ->
       @elementStartPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
 
       @helperStartPosition = if shouldCalculateOffset
+        elementPreTransformStartPageOffset = if not helperIsSynthesized and @isTransformed(@$element)
+          # Save the element's current transform
+          savedTransform = @$element.css('transform')
+
+          # Disable the transform before calculating the element's position
+          @$element.css('transform', 'none')
+
+          # Get the element's pre-transform offset, with respect to the page
+          preTransformOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
+
+          # Restore the transform
+          @$element.css('transform', savedTransform)
+
+          # Store the pre-transform offset
+          preTransformOffset
+        else
+          @elementStartPageOffset
+
         # Convert between the offset with respect to the page, and one with respect to its offset or transformed parent's coordinate system
-        startPosition = convertPointFromPageToNode @parent, @elementStartPageOffset
+        startPosition = convertPointFromPageToNode @parent, elementPreTransformStartPageOffset
 
         if @isTransformed(@parent)
           # Apply the scroll offset of the element's transformed parent
