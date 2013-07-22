@@ -495,9 +495,6 @@ describe 'A draggable', ->
               it 'should be positioned absolutely', ->
                 expect(@appendedElement).toHaveCss { position: 'absolute' }
 
-              it 'should have no id', ->
-                expect(@appendedElement).not.toHaveAttr('id')
-
               it 'should have been appended to the body', ->
                 expect(@appendReceiver).toBe('body')
 
@@ -511,6 +508,9 @@ describe 'A draggable', ->
                 expect(@appendedElement.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
               if helperConfig is 'clone'
+                it 'should have no id', ->
+                  expect(@appendedElement).not.toHaveAttr('id')
+
                 it 'should contain a copy of the original element‘s contents', ->
                   expect(@appendedElement.html()).toBe(@$draggable.clone().html())
 

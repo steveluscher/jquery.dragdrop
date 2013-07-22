@@ -461,6 +461,9 @@ jQuery ->
       # Clone the original element
       helper = element.clone()
 
+      # Remove the ID attribute
+      helper.removeAttr('id')
+
       # Post process the helper element
       @prepareHelper helper
 
@@ -510,11 +513,8 @@ jQuery ->
       css.left = @elementStartPageOffset.x
       css.top = @elementStartPageOffset.y
 
-      $helper
-        # Remove the ID attribute
-        .removeAttr('id')
-        # Style it
-        .css(css)
+      # Style it
+      $helper.css(css)
 
     cleanUp: ->
       # Clean up
