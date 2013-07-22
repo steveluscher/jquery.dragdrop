@@ -225,8 +225,8 @@ jQuery ->
       shouldCalculateOffset =
         # Always calculate the offset if a synthesized helper is involved
         helperIsSynthesized or
-        # …or if the original element behaves as though it is absolutely positioned
-        ((elementPosition = @$element.css('position')) is 'absolute' or (elementPosition is 'fixed' and @isTransformed(@parent)))
+        # …or if the original element behaves as though it is absolutely positioned, but has no explicit top or left
+        (@isAbsoluteish(@$element) and @isPositionedImplicitly(@$element))
 
       # Store the start offset of the draggable, with respect to the page
       @elementStartPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
@@ -367,6 +367,15 @@ jQuery ->
     #
     # Validators
     #
+
+    isAbsoluteish: (element) ->
+      /fixed|absolute/.test $(element).css('position')
+
+    isPositionedImplicitly: (element) ->
+      $element = $(element)
+
+      return true if $element.css('top') is 'auto' and $element.css('bottom') is 'auto'
+      return true if $element.css('left') is 'auto' and $element.css('right') is 'auto'
 
     isValidHandle: (element) ->
       if @getConfig().handle
