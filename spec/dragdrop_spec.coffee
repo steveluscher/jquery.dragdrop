@@ -203,9 +203,6 @@ describe 'A droppable', ->
             $(document).simulate 'mousemove',
               clientX: droppableTopCorner.left - 1
               clientY: droppableTopCorner.top - 1
-            @$droppable.simulate 'mouseout',
-              clientX: droppableTopCorner.left - 1
-              clientY: droppableTopCorner.top - 1
 
           describe 'the out callback', ->
 
