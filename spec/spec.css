@@ -9,6 +9,18 @@
   left: auto;
   right: 50px;
 }
+#droppable_nested_parent {
+  left: auto;
+  right: 175px;
+}
+#droppable_nested_child {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  bottom: 15px;
+  right: 15px;
+  border: 1px solid rgba(0, 0, 255, 0.1);
+}
 .fixed {
   position: fixed;
   top: 175px;

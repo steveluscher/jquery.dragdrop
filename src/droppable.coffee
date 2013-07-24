@@ -63,17 +63,36 @@ jQuery ->
       # Done!
       @setupPerformed = true
 
-    setupMouseEnterListener: ->
+    setupMouseOverListener: ->
       # Attach a handler to catch mouse enter events
-      @$element.on
-        mouseenter: @handleOver
+      @$element.on 'mouseover', (e) =>
+        return if (
+          # Bail if there is no drag in progress
+          not @dragStarted or
+          # …or if we are already the drop target
+          @isDropTarget
+        )
+
+        # Crawl backward from the origin of this mouse over event until we find a droppable
+        $closestDroppableToOrigin = getClosestDroppable(e.target)
+
+        # If we're the closest droppable to this mouse over event, fire the drop over event
+        @handleOver(e) if @$element.is($closestDroppableToOrigin)
 
       @mouseEnterListenerSetupPerformed = true
 
-    setupMouseLeaveListener: ->
+    setupMouseOutListener: ->
       # Attach a handler to catch mouse leave events
-      @$element.on
-        mouseleave: @handleOut
+      @$element.on 'mouseout', (e) =>
+        # Bail if there is no drag in progress
+        return unless @dragStarted
+
+        # Crawl backward from the origin of this mouse out event until we find a droppable
+        $closestDroppableToOrigin = getClosestDroppable(e.target)
+        $closestDroppableToNextElement = getClosestDroppable(e.relatedTarget)
+
+        # If we are moving away from this droppable, fire the drop out event
+        @handleOut(e) if @$element.is($closestDroppableToOrigin) and not @$element.is($closestDroppableToNextElement)
 
       @mouseLeaveListenerSetupPerformed = true
 
@@ -86,7 +105,7 @@ jQuery ->
       @setupElement() unless @setupPerformed
 
       # Lazily attach a mouse enter listener to the element
-      @setupMouseEnterListener() unless @mouseEnterListenerSetupPerformed
+      @setupMouseOverListener() unless @mouseEnterListenerSetupPerformed
 
       # Mark the drag as having started
       @dragStarted = true
@@ -99,9 +118,10 @@ jQuery ->
 
       # Did this drag start over top of this droppable?
       elementUnderMouse = document.elementFromPoint(e.originalEvent.clientX, e.originalEvent.clientY)
+      $closestDroppableUnderMouse = getClosestDroppable(elementUnderMouse)
 
-      # If this drag started over top of this droppable or one of its descendants, handle the over event right away
-      @handleOver(e) if $(elementUnderMouse).closest(@$element).length
+      # If this drag started over top of this droppable, handle the over event right away
+      @handleOver(e) if @$element.is($closestDroppableUnderMouse)
 
       # Watch for the draggable to be dropped
       $(jQuery.draggable::).on
@@ -126,14 +146,12 @@ jQuery ->
     # Droppable events
     #
 
-    handleOver: (e) =>
-      return unless @dragStarted and not @isDropTarget
-
+    handleOver: (e) ->
       # Ensure that this draggable is acceptable to this droppable
       return unless @getConfig().accept(@draggable.$element)
 
       # Lazily attach a mouse leave listener to the element
-      @setupMouseLeaveListener() unless @mouseLeaveListenerSetupPerformed
+      @setupMouseOutListener() unless @mouseLeaveListenerSetupPerformed
 
       @$element
         # Apply the hover class
@@ -148,9 +166,7 @@ jQuery ->
       # Call any user-supplied over callback
       @getConfig().over?(e, eventMetadata)
 
-    handleOut: (e) =>
-      return unless @dragStarted
-
+    handleOut: (e) ->
       @$element
         # Remove the hover class
         .removeClass(@getConfig().hoverClass)
@@ -178,6 +194,20 @@ jQuery ->
       @isDropTarget = false
       delete @draggable
       delete @$helper
+
+    getClosestDroppable = (element) ->
+      $putativeDroppable = $(element)
+
+      # Crawl up the DOM, starting at the supplied element
+      $putativeDroppable = $putativeDroppable.parent() until (
+        # Stop searching when we run out of candidates
+        not $putativeDroppable.length or
+        # …or when we reach the first droppable
+        $putativeDroppable.data('droppable')
+      )
+
+      # Return our findings
+      $putativeDroppable
 
   $.fn.droppable = (options) ->
     this.each ->

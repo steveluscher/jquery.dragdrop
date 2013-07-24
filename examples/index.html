@@ -40,6 +40,10 @@
     # Initialize the droppable
     $('#droppable_absolute').droppable()
 
+    # Initialize the nested droppables
+    $('#droppable_nested_parent').droppable()
+    $('#droppable_nested_child').droppable()
+
     # Initialize the funhouse draggable/droppable
     $('.funhouse #draggable_static').draggable()
     $('.funhouse #draggable_annoying').draggable()
@@ -99,6 +103,15 @@
       Drop here, absolutely
     </p>
   </div>
+
+  <div id="droppable_nested_parent" class="absolute">
+    <div id="droppable_nested_child">
+      <p>
+        Drop here, nestedly
+      </p>
+    </div>
+  </div>
+
 
   <section class="funhouse">
     <div id="draggable_static" style="width: 500px">

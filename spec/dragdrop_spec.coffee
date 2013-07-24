@@ -264,3 +264,40 @@ describe 'A droppable', ->
             expectedOffset: -> @$draggable.offset()
             expectedHelper: -> @$draggable
             expectedDraggable: -> @$draggable
+
+describe 'Nested droppables', ->
+
+  beforeEach ->
+    # Load two nested droppables
+    loadFixtures 'droppable_nested.html'
+
+    @$parentDroppable = $('#droppable_nested_parent').droppable()
+    @$childDroppable = $('#droppable_nested_child').droppable()
+
+  describe 'having had a draggable come to hover above the child droppable', ->
+
+    beforeEach ->
+      appendLoadFixtures 'draggable_absolute.html'
+      @$draggable = $('#draggable_absolute').draggable()
+
+      # Find the center of the elements
+      draggableCenter = SpecHelper.findCenterOf @$draggable
+      childDroppableCenter = SpecHelper.findCenterOf @$childDroppable
+
+      # Drag the draggable over top of the child droppable
+      @$draggable.simulate 'mousedown',
+        clientX: draggableCenter.x
+        clientY: draggableCenter.y
+      $(document).simulate 'mousemove',
+        clientX: childDroppableCenter.x
+        clientY: childDroppableCenter.y
+
+    describe 'the parent droppable', ->
+
+      it 'should not possess the default hover class', ->
+        expect(@$parentDroppable).not.toHaveClass $.droppable::defaults['hoverClass']
+
+    describe 'the child droppable', ->
+
+      it 'should possess the default hover class', ->
+        expect(@$childDroppable).toHaveClass $.droppable::defaults['hoverClass']
