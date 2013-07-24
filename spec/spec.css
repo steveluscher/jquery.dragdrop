@@ -1,17 +1,17 @@
 .absolute {
   position: absolute;
-  top: 150px;
-  left: 250px;
+  top: 175px;
+  left: 50px;
   width: 100px;
   height: 100px;
 }
 #droppable_absolute {
   left: auto;
-  right: 250px;
+  right: 50px;
 }
 .fixed {
   position: fixed;
-  top: 25px;
+  top: 175px;
   left: 250px;
   width: 100px;
   height: 100px;
@@ -51,4 +51,8 @@
   width: 400px;
   height: 400px;
   overflow: auto;
+}
+
+.funhouse .ui-droppable {
+	top: 50px;
 }
