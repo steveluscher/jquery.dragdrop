@@ -33,7 +33,7 @@ jQuery ->
     constructor: (element, @options = {}) ->
       # Coerce the accept option to be a function if it appears to be a selector string
       if typeof (selector = @options.accept) is 'string'
-        @options.accept = ($draggable) => $draggable.is(selector)
+        @options.accept = (metadata) => metadata.draggable.is(selector)
 
       super
 
@@ -147,8 +147,11 @@ jQuery ->
     #
 
     handleOver: (e) ->
+      # Compute the event metadata
+      eventMetadata = @getEventMetadata()
+
       # Ensure that this draggable is acceptable to this droppable
-      return unless @getConfig().accept(@draggable.$element)
+      return unless @getConfig().accept(eventMetadata)
 
       # Lazily attach a mouse leave listener to the element
       @setupMouseOutListener() unless @mouseLeaveListenerSetupPerformed
@@ -159,9 +162,6 @@ jQuery ->
 
       # Mark this droppable as being the drop target
       @isDropTarget = true
-
-      # Compute the event metadata
-      eventMetadata = @getEventMetadata()
 
       # Call any user-supplied over callback
       @getConfig().over?(e, eventMetadata)

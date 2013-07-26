@@ -5,7 +5,7 @@ describe 'A droppable', ->
 
   options.acceptConfigVariants =
     'a string representing a selector': ".#{options.acceptableClass}"
-    'an acceptance function': jasmine.createSpy('acceptanceFunction').andCallFake ($draggable) -> $draggable.is(".#{options.acceptableClass}")
+    'an acceptance function': jasmine.createSpy('acceptanceFunction').andCallFake (metadata) -> metadata.draggable.is(".#{options.acceptableClass}")
 
   describe 'configured using the default options', ->
 
@@ -69,6 +69,9 @@ describe 'A droppable', ->
         describe "such as #{variant}", ->
 
           beforeEach ->
+            if typeof acceptConfig is 'function'
+              @acceptanceFunction = acceptConfig
+
             loadFixtures 'droppable_absolute.html'
             @$droppable = $('#droppable_absolute').droppable(accept: acceptConfig)
 
@@ -91,8 +94,17 @@ describe 'A droppable', ->
                 clientY: droppableCenter.y
 
             if typeof acceptConfig is 'function'
-              it 'should call the acceptance function with the draggable as its first argument', ->
-                expect(acceptConfig.mostRecentCall.args[0]).toBe(@$draggable)
+              describe 'the first argument to the acceptance function', ->
+
+                SpecHelper.metadataSpecs.call this,
+                  spyName: 'acceptanceFunction'
+                  argNumber: 0
+                  expectedPosition: ->
+                    top: parseFloat(@$draggable.css('top')) or 0
+                    left: parseFloat(@$draggable.css('left')) or 0
+                  expectedOffset: -> @$draggable.offset()
+                  expectedHelper: -> @$draggable
+                  expectedDraggable: -> @$draggable
 
             it 'should possess the default hover class', ->
               expect(@$droppable).toHaveClass $.droppable::defaults['hoverClass']
