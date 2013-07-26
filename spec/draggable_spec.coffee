@@ -921,11 +921,14 @@ describe 'A draggable', ->
                           dx: options.dragDistance
                           dy: options.dragDistance
 
+                        # Let's use imprecise matchers for the transformed elements
+                        @matcher = if elementTransformedness is 'transformed' then 'toBeCloseTo' else 'toBe'
+
                       it 'should find itself the drag distance from its original top offset', ->
-                        expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
+                        expect(@$draggable.offset().top)[@matcher](@originalOffset.top + options.dragDistance)
 
                       it 'should find itself the drag distance from its original left offset', ->
-                        expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
+                        expect(@$draggable.offset().left)[@matcher](@originalOffset.left + options.dragDistance)
 
                     for scrollVariant, scrollOffset of options.scrollOffsetVariants
                       do (scrollVariant, scrollOffset) ->
