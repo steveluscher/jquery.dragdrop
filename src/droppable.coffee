@@ -79,7 +79,7 @@ jQuery ->
         # If we're the closest droppable to this mouse over event, fire the drop over event
         @handleOver(e) if @$element.is($closestDroppableToOrigin)
 
-      @mouseEnterListenerSetupPerformed = true
+      @mouseOverListenerSetupPerformed = true
 
     setupMouseOutListener: ->
       # Attach a handler to catch mouse leave events
@@ -94,7 +94,7 @@ jQuery ->
         # If we are moving away from this droppable, fire the drop out event
         @handleOut(e) if @$element.is($closestDroppableToOrigin) and not @$element.is($closestDroppableToNextElement)
 
-      @mouseLeaveListenerSetupPerformed = true
+      @mouseOutListenerSetupPerformed = true
 
     #
     # Draggable events
@@ -104,8 +104,8 @@ jQuery ->
       # Lazily perform setup on the element
       @setupElement() unless @setupPerformed
 
-      # Lazily attach a mouse enter listener to the element
-      @setupMouseOverListener() unless @mouseEnterListenerSetupPerformed
+      # Lazily attach a mouse over listener to the element
+      @setupMouseOverListener() unless @mouseOverListenerSetupPerformed
 
       # Mark the drag as having started
       @dragStarted = true
@@ -129,8 +129,12 @@ jQuery ->
 
     handleDraggableStop: (e, draggable) =>
       if @isDropTarget
-        # Trigger the out handler
-        @handleOut(e.originalEvent)
+        @$element
+          # Remove the hover class
+          .removeClass(@getConfig().hoverClass)
+
+        # Unmark this droppable as being the drop target
+        @isDropTarget = false
 
         # Trigger the drop handler
         @handleDrop(e.originalEvent)
@@ -154,7 +158,7 @@ jQuery ->
       return unless @getConfig().accept(eventMetadata)
 
       # Lazily attach a mouse leave listener to the element
-      @setupMouseOutListener() unless @mouseLeaveListenerSetupPerformed
+      @setupMouseOutListener() unless @mouseOutListenerSetupPerformed
 
       @$element
         # Apply the hover class
@@ -163,8 +167,14 @@ jQuery ->
       # Mark this droppable as being the drop target
       @isDropTarget = true
 
+      # Synthesize a new event to represent this drop over
+      dropOverEvent = @synthesizeEvent('dropover', e)
+
       # Call any user-supplied over callback
-      @getConfig().over?(e, eventMetadata)
+      @getConfig().over?(dropOverEvent, eventMetadata)
+
+      # Trigger the drop over event on this droppable's element
+      @$element.trigger(dropOverEvent, eventMetadata)
 
     handleOut: (e) ->
       @$element
@@ -174,15 +184,30 @@ jQuery ->
       # Unmark this droppable as being the drop target
       @isDropTarget = false
 
+      # Compute the event metadata
+      eventMetadata = @getEventMetadata()
+
+      # Synthesize a new event to represent this drop out
+      dropOutEvent = @synthesizeEvent('dropout', e)
+
       # Call any user-supplied out callback
-      @getConfig().out?(e)
+      @getConfig().out?(dropOutEvent)
+
+      # Trigger the drop out event on this droppable's element
+      @$element.trigger(dropOutEvent, eventMetadata)
 
     handleDrop: (e) ->
       # Compute the event metadata
       eventMetadata = @getEventMetadata()
 
+      # Synthesize a new event to represent this drop out
+      dropEvent = @synthesizeEvent('drop', e)
+
       # Call any user-supplied drop callback
-      @getConfig().drop?(e, eventMetadata)
+      @getConfig().drop?(dropEvent, eventMetadata)
+
+      # Trigger the drop event on this droppable's element
+      @$element.trigger(dropEvent, eventMetadata)
 
     #
     # Helpers

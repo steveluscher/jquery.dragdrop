@@ -269,8 +269,11 @@ jQuery ->
       startOffset = @pointToPosition @elementStartPageOffset
       eventMetadata = @getEventMetadata(startPosition, startOffset)
 
+      # Synthesize a new event to represent this drag start
+      dragStartEvent = @synthesizeEvent('dragstart', e)
+
       # Call any user-supplied drag callback; cancel the start if it returns false
-      if @getConfig().start?(e, eventMetadata) is false
+      if @getConfig().start?(dragStartEvent, eventMetadata) is false
         @handleDragStop(e)
         return
 
@@ -307,6 +310,9 @@ jQuery ->
       # Mark the drag as having started
       @dragStarted = true
 
+      # Trigger the drag start event on this draggable's element
+      @$element.trigger(dragStartEvent, eventMetadata)
+
     handleDrag: (e, immediate = false) ->
       dragHandler = =>
         # Map the mouse coordinates into the element's coordinate space
@@ -324,19 +330,25 @@ jQuery ->
 
         # Calculate the target offset
         targetOffset =
-          top: @elementStartPageOffset.y + (e.pageY - @mousedownEvent.pageY)
           left: @elementStartPageOffset.x + (e.pageX - @mousedownEvent.pageX)
+          top: @elementStartPageOffset.y + (e.pageY - @mousedownEvent.pageY)
 
         # Compute the event metadata
         eventMetadata = @getEventMetadata(targetPosition, targetOffset)
 
+        # Synthesize a new event to represent this drag
+        dragEvent = @synthesizeEvent('drag', e)
+
         # Call any user-supplied drag callback; cancel the drag if it returns false
-        if @getConfig().drag?(e, eventMetadata) is false
+        if @getConfig().drag?(dragEvent, eventMetadata) is false
           @handleDragStop(e)
           return
 
         # Move the helper
         @$helper.css eventMetadata.position
+
+        # Trigger the drag event on this draggable's element
+        @$element.trigger(dragEvent, eventMetadata)
 
       if immediate
         # Call the drag handler right away
@@ -373,8 +385,14 @@ jQuery ->
         # Restore the original value of the pointer-events property
         @$element.css(pointerEvents: @originalPointerEventsPropertyValue)
 
+        # Synthesize a new event to represent this drag start
+        dragStopEvent = @synthesizeEvent('dragstop', e)
+
         # Call any user-supplied stop callback
-        @getConfig().stop?(e, eventMetadata)
+        @getConfig().stop?(dragStopEvent, eventMetadata)
+
+        # Trigger the drag stop on this draggable's element
+        @$element.trigger(dragStopEvent, eventMetadata)
 
         # Broadcast to interested subscribers that this droppable has been dropped
         @broadcast('stop', e)
@@ -414,10 +432,7 @@ jQuery ->
 
     broadcast: (type, originalEvent) ->
       # Synthesize a new event with this type
-      event = new jQuery.Event(type)
-
-      # Attach the original mouse event to it
-      event.originalEvent = originalEvent
+      event = @synthesizeEvent(type, originalEvent)
 
       # Broadcast!
       $(jQuery.draggable::).trigger(event, @)

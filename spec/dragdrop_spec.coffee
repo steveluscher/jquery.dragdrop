@@ -16,23 +16,61 @@ describe 'A droppable', ->
     describe 'with a draggable hovering above it', ->
 
       beforeEach ->
+        # Watch the droppable for the dropover event
+        spyOnEvent @$droppable, 'dropover'
+
         appendLoadFixtures 'draggable_static.html'
         @$draggable = $('#draggable_static').draggable()
 
         # Find the center of the elements
-        draggableCenter = SpecHelper.findCenterOf @$draggable
+        @draggableCenter = SpecHelper.findCenterOf @$draggable
         droppableCenter = SpecHelper.findCenterOf @$droppable
 
         # Drag the draggable over top of the droppable
         @$draggable.simulate 'mousedown',
-          clientX: draggableCenter.x
-          clientY: draggableCenter.y
+          clientX: @draggableCenter.x
+          clientY: @draggableCenter.y
         $(document).simulate 'mousemove',
           clientX: droppableCenter.x
           clientY: droppableCenter.y
 
       it 'should possess the default hover class', ->
         expect(@$droppable).toHaveClass $.droppable::defaults['hoverClass']
+
+      it 'should have the dropover event fired upon it', ->
+        expect('dropover').toHaveBeenTriggeredOn(@$droppable)
+        # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
+
+      describe 'then dropped', ->
+
+        beforeEach ->
+          # Watch the droppable for the drop event
+          spyOnEvent @$droppable, 'drop'
+
+          @$draggable.simulate 'mouseup',
+            clientX: @draggableCenter.x
+            clientY: @draggableCenter.y
+          @$draggable.simulate 'click',
+            clientX: @draggableCenter.x
+            clientY: @draggableCenter.y
+
+        it 'should have the drop event fired upon it', ->
+          expect('drop').toHaveBeenTriggeredOn(@$droppable)
+          # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
+
+      describe 'then having had that draggable leave its bounds', ->
+
+        beforeEach ->
+          # Watch the droppable for the dropout event
+          spyOnEvent @$droppable, 'dropout'
+
+          $(document).simulate 'mousemove',
+            clientX: @draggableCenter.x
+            clientY: @draggableCenter.y
+
+        it 'should have the dropout event fired upon it', ->
+          expect('dropout').toHaveBeenTriggeredOn(@$droppable)
+          # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
 
   describe 'configured using the hoverClass option', ->
 
@@ -163,16 +201,21 @@ describe 'A droppable', ->
 
         describe 'the over callback', ->
 
-          it 'should have been called', ->
-            expect(@callback).toHaveBeenCalled()
-
-          it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
+          it 'should have been called with a jQuery event as the first parameter, and an object as the second parameter', ->
             expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
 
           it 'should have been bound to the droppable’s plugin instance', ->
             expect(@valueOfThis).toBe(@$droppable.data('droppable'))
 
-        describe 'the second parameter to the over callback', ->
+        describe 'the first argument to the over callback', ->
+
+          SpecHelper.eventArgumentSpecs.call this,
+            instanceType: -> 'droppable'
+            callback: -> @callback
+            expectedEvent: -> 'dropover'
+            expectedTarget: -> @$droppable.get(0)
+
+        describe 'the second argument to the over callback', ->
 
           SpecHelper.metadataSpecs.call this,
             expectedPosition: ->
@@ -227,6 +270,14 @@ describe 'A droppable', ->
             it 'should have been bound to the droppable’s plugin instance', ->
               expect(@valueOfThis).toBe(@$droppable.data('droppable'))
 
+          describe 'the first argument to the out callback', ->
+
+            SpecHelper.eventArgumentSpecs.call this,
+              instanceType: -> 'droppable'
+              callback: -> @callback
+              expectedEvent: -> 'dropout'
+              expectedTarget: -> @$droppable.get(0)
+
     describe 'such as a drop callback', ->
 
       beforeEach ->
@@ -267,7 +318,15 @@ describe 'A droppable', ->
           it 'should have been bound to the droppable’s plugin instance', ->
             expect(@valueOfThis).toBe(@$droppable.data('droppable'))
 
-        describe 'the second parameter to the drop callback', ->
+        describe 'the first argument to the drop callback', ->
+
+          SpecHelper.eventArgumentSpecs.call this,
+            instanceType: -> 'droppable'
+            callback: -> @callback
+            expectedEvent: -> 'drop'
+            expectedTarget: -> @$droppable.get(0)
+
+        describe 'the second argument to the drop callback', ->
 
           SpecHelper.metadataSpecs.call this,
             expectedPosition: ->

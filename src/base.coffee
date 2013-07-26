@@ -14,6 +14,21 @@ class jQuery.dragdrop
       for prop of source
         obj[prop] = source[prop] if obj[prop] is undefined
     obj
+  synthesizeEvent: (type, originalEvent) ->
+    # Create an event using the original one as the basis
+    event = jQuery.Event(originalEvent)
+
+    # Set the type of the new event
+    event.type = type
+
+    # Set the target of the event to the DOM element of this draggable/droppable
+    event.target = @$element.get(0)
+
+    # Copy properties from the original event to the new one, except where one already exists
+    (event[key] = value unless key of event) for key, value of originalEvent
+
+    # Return the event
+    event
   getEventMetadata: (position, offset) ->
     metadata =
       # Report the position of the helper

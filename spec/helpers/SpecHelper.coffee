@@ -14,6 +14,21 @@ class this.SpecHelper
       clientY: center.y
     center
 
+  @eventArgumentSpecs: (options = {}) ->
+    it 'should have an originalEvent property', ->
+      callback = options.callback.call(this)
+      expect(callback.mostRecentCall.args[0].originalEvent).toEqual(jasmine.any(jQuery.Event))
+
+    it "should have a target property representing the #{options.instanceType.call(this)}’s DOM element", ->
+      callback = options.callback.call(this)
+      expectedTarget = options.expectedTarget.call(this)
+      expect(callback.mostRecentCall.args[0].target).toBe(expectedTarget)
+
+    it "should have a type property equal to “#{options.expectedEvent.call(this)}”", ->
+      callback = options.callback.call(this)
+      expectedEvent = options.expectedEvent.call(this)
+      expect(callback.mostRecentCall.args[0].type).toBe(expectedEvent)
+
   @metadataSpecs: (options = {}) ->
     options = SpecHelper.applyDefaults options,
       spyName: 'callback'

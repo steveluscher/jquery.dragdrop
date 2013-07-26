@@ -106,7 +106,9 @@ describe 'A draggable', ->
 
             beforeEach ->
               loadFixtures 'draggable_static.html'
-              @$draggable = $('#draggable_static').draggable(drag: @callback)
+              config = {}
+              config[callbackType] = @callback
+              @$draggable = $('#draggable_static').draggable(config)
 
             describe 'when dragged', ->
 
@@ -119,12 +121,13 @@ describe 'A draggable', ->
 
                 # Drag the draggable a standard distance
                 @$draggable.simulate 'drag',
+                  moves: 1
                   dx: options.dragDistance
                   dy: options.dragDistance
 
               describe "the #{callbackType} callback", ->
 
-                it 'should have been called with the jQuery mouse event as the first parameter, and an object as the second parameter', ->
+                it 'should have been called with a jQuery event as the first parameter, and an object as the second parameter', ->
                   expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), jasmine.any(Object))
 
                 it 'should have been bound to the draggable’s plugin instance', ->
@@ -145,6 +148,9 @@ describe 'A draggable', ->
           beforeEach ->
             @originalOffset = @$draggable.offset()
 
+            # Watch the draggable for the dragstart event
+            spyOnEvent @$draggable, 'dragstart'
+
             # Drag the draggable a standard distance
             @$draggable.simulate 'drag',
               dx: options.dragDistance
@@ -155,6 +161,10 @@ describe 'A draggable', ->
 
           it 'should find itself at its original left offset', ->
             expect(@$draggable.offset().left).toBe(@originalOffset.left)
+
+          it 'should not have the dragstart event fired upon it', ->
+            expect('dragstart').not.toHaveBeenTriggeredOn(@$draggable)
+            # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
 
       describe 'that does not return false', ->
 
@@ -193,7 +203,15 @@ describe 'A draggable', ->
             it 'should have been called once', ->
               expect(@callback.callCount).toBe(1)
 
-          describe 'the second parameter to the start callback', ->
+          describe 'the first argument to the start callback', ->
+
+            SpecHelper.eventArgumentSpecs.call this,
+              instanceType: -> 'draggable'
+              callback: -> @callback
+              expectedEvent: -> 'dragstart'
+              expectedTarget: -> @$draggable.get(0)
+
+          describe 'the second argument to the start callback', ->
 
             SpecHelper.metadataSpecs.call this,
               expectedOriginalPosition: -> @originalPosition
@@ -215,6 +233,9 @@ describe 'A draggable', ->
           beforeEach ->
             @originalOffset = @$draggable.offset()
 
+            # Watch the draggable for the dragstart event
+            spyOnEvent @$draggable, 'drag'
+
             # Drag the draggable a standard distance
             @$draggable.simulate 'drag',
               moves: 2
@@ -226,6 +247,10 @@ describe 'A draggable', ->
 
           it 'should find itself at its original left offset', ->
             expect(@$draggable.offset().left).toBe(@originalOffset.left)
+
+          it 'should not have the drag event fired upon it', ->
+            expect('drag').not.toHaveBeenTriggeredOn(@$draggable)
+            # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
 
           describe 'the drag callback', ->
 
@@ -258,7 +283,15 @@ describe 'A draggable', ->
             it 'should have been called once for every mouse movement', ->
               expect(@callback.callCount).toBe(@moves)
 
-          describe 'the second parameter to the drag callback', ->
+          describe 'the first argument to the drag callback', ->
+
+            SpecHelper.eventArgumentSpecs.call this,
+              instanceType: -> 'draggable'
+              callback: -> @callback
+              expectedEvent: -> 'drag'
+              expectedTarget: -> @$draggable.get(0)
+
+          describe 'the second argument to the drag callback', ->
 
             SpecHelper.metadataSpecs.call this,
               expectedOriginalPosition: -> @originalPosition
@@ -332,7 +365,15 @@ describe 'A draggable', ->
           it 'should have been called once', ->
             expect(@callback.callCount).toBe(1)
 
-        describe 'the second parameter to the stop callback', ->
+        describe 'the first argument to the stop callback', ->
+
+          SpecHelper.eventArgumentSpecs.call this,
+            instanceType: -> 'draggable'
+            callback: -> @callback
+            expectedEvent: -> 'dragstop'
+            expectedTarget: -> @$draggable.get(0)
+
+        describe 'the second argument to the stop callback', ->
 
           SpecHelper.metadataSpecs.call this,
             expectedOriginalPosition: -> @originalPosition
@@ -613,6 +654,10 @@ describe 'A draggable', ->
         describe 'then moved', ->
 
           beforeEach ->
+            # Watch the draggable for the dragstart/drag events
+            spyOnEvent @$draggable, 'dragstart'
+            spyOnEvent @$draggable, 'drag'
+
             # Move it by the prescribed amount, without lifting the mouse button
             $(document).simulate 'mousemove',
               clientX: @center.x + options.dragDistance
@@ -621,10 +666,21 @@ describe 'A draggable', ->
           it 'should possess the default dragging class', ->
             expect(@$draggable).toHaveClass $.draggable::defaults['draggingClass']
 
+          it 'should have the dragstart event fired upon it', ->
+            expect('dragstart').toHaveBeenTriggeredOn(@$draggable)
+            # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
+
+          it 'should have the drag event fired upon it', ->
+            expect('drag').toHaveBeenTriggeredOn(@$draggable)
+            # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
+
           describe 'then having been released', ->
 
             beforeEach ->
               spyOnEvent @$draggable, 'mouseup'
+
+              # Watch the draggable for the dragstart/drag events
+              spyOnEvent @$draggable, 'dragstop'
 
               @$draggable.simulate 'mouseup',
                 clientX: @center.x + options.dragDistance
@@ -644,6 +700,10 @@ describe 'A draggable', ->
 
               it 'should not receive the click event', ->
                 expect('click').not.toHaveBeenTriggeredOn(@$draggable)
+
+              it 'should have the dragstop event fired upon it', ->
+                expect('dragstop').toHaveBeenTriggeredOn(@$draggable)
+                # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
 
             describe 'outside the browser window', ->
 
