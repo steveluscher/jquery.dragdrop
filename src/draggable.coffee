@@ -156,6 +156,9 @@ jQuery ->
       # Until told otherwise, the interaction started by this mousedown should not cancel any subsequent click event
       @shouldCancelClick = false
 
+      # Bail if a canceling agent has been clicked on
+      return if @isCancelingAgent(e.target)
+
       # Bail if this is not a valid handle
       return unless @isValidHandle(e.target)
 
@@ -481,12 +484,18 @@ jQuery ->
       return true if $element.css('top') is 'auto' and $element.css('bottom') is 'auto'
       return true if $element.css('left') is 'auto' and $element.css('right') is 'auto'
 
+    isCancelingAgent: (element) ->
+      if @getConfig().cancel
+        # Is this element the canceling agent itself, or a descendant of the canceling agent?
+        !!$(element).closest(@getConfig().cancel).length
+      else
+        # No canceling agent was specified; don't cancel
+        false
+
     isValidHandle: (element) ->
       if @getConfig().handle
-        $element = $(element)
-
         # Is this element the handle itself, or a descendant of the handle?
-        !!$element.closest(@getConfig().handle).length
+        !!$(element).closest(@getConfig().handle).length
       else
         # No handle was specified; anything is fair game
         true

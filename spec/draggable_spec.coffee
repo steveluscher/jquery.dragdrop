@@ -10,6 +10,10 @@ options =
   scrollOffsetVariants:
     'no': 0
     'a non-zero': 50
+  cancelConfigVariants:
+    'selector': -> '#cancelingAgent'
+    'DOM element': -> $('#cancelingAgent').get(0)
+    'jQuery object': -> $('#cancelingAgent')
   handleConfigVariants:
     'selector': -> '#handle'
     'DOM element': -> $('#handle').get(0)
@@ -415,6 +419,74 @@ describe 'A draggable', ->
               left: parseFloat(@$draggable.css('left')) or 0
             expectedOffset: -> @$draggable.offset()
             expectedHelper: -> @$draggable
+
+  for variant, getCancelConfig of options.cancelConfigVariants
+    do (variant, getCancelConfig) ->
+
+      describe "configured with a #{variant} as a canceling agent", ->
+
+        beforeEach ->
+          loadFixtures 'draggable_with_canceling_agent.html'
+
+          # Get the cancel config, and the canceling agent itself
+          @cancelConfig = getCancelConfig()
+          @cancelingAgent = $(@cancelConfig)
+
+          @$draggable = $('#draggable_static').draggable(cancel: @cancelConfig)
+
+        describe 'after having been dragged by its canceling agent', ->
+
+          beforeEach ->
+            # The draggable's start position
+            @start = @$draggable.offset()
+
+            # Drag the draggable a standard distance, using the canceling agent
+            @cancelingAgent.simulate 'drag',
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+            # The draggable's end position
+            @end = @$draggable.offset()
+
+          it 'should not have triggered a drag', ->
+            expect(@end.top - @start.top).toBe(0)
+            expect(@end.left - @start.left).toBe(0)
+
+        describe 'after having been dragged by a descendant of its canceling agent', ->
+
+          beforeEach ->
+            # The draggable's start position
+            @start = @$draggable.offset()
+
+            # Drag the draggable a standard distance, using a descendant of the canceling agent
+            @cancelingAgent.children().simulate 'drag',
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+            # The draggable's end position
+            @end = @$draggable.offset()
+
+          it 'should not have triggered a drag', ->
+            expect(@end.top - @start.top).toBe(0)
+            expect(@end.left - @start.left).toBe(0)
+
+        describe 'after having been dragged by something other than its canceling agent', ->
+
+          beforeEach ->
+            # The draggable's start position
+            @start = @$draggable.offset()
+
+            # Drag the draggable a standard distance
+            @$draggable.simulate 'drag',
+              dx: options.dragDistance
+              dy: options.dragDistance
+
+            # The draggable's end position
+            @end = @$draggable.offset()
+
+          it 'should have triggered a drag', ->
+            expect(@end.top - @start.top).toBe(options.dragDistance)
+            expect(@end.left - @start.left).toBe(options.dragDistance)
 
   for variant, getHandleConfig of options.handleConfigVariants
     do (variant, getHandleConfig) ->
