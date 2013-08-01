@@ -232,7 +232,7 @@ jQuery ->
       @elementStartPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(0, 0)
 
       @helperStartPosition = if shouldCalculateOffset
-        elementPreTransformStartPageOffset = if not helperIsSynthesized and @isTransformed(@$element)
+        elementPreTransformStartPageOffset = if not helperIsSynthesized and @isTransformed(@$element.get(0))
           # Save the element's current transform
           savedTransform = @$element.css('transform')
 
@@ -424,7 +424,7 @@ jQuery ->
         true
 
     isTransformed: (element) ->
-      @getTransformMatrix(element) isnt 'none'
+      getTransformMatrixString(element) isnt 'none'
 
     #
     # Helpers
@@ -443,11 +443,11 @@ jQuery ->
       cancelAnimationFrame(@scheduledDragId)
       @scheduledDragId = null
 
-    getTransformMatrix: (element) ->
+    getTransformMatrixString = (element) ->
       # Get the computed styles
-      computedStyle = getComputedStyle $(element).get(0)
+      return 'none' unless computedStyle = getComputedStyle(element)
 
-      # Return the matrix
+      # Return the matrix string
       computedStyle.WebkitTransform or computedStyle.msTransform or computedStyle.MozTransform or computedStyle.OTransform or 'none'
 
     getOffsetParentOrTransformedParent: (element) ->
