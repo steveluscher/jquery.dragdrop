@@ -17,6 +17,39 @@ options =
   helperConfigVariants:
     'clone': 'clone'
     'a factory method that produces something DOM-element-like': jasmine.createSpy('helperFactory').andReturn($(sandbox()).text('I’m a helper'))
+  containmentConfigVariants:
+    'an array of bounds':
+      config: -> [50, 300, 250, 100] # [ top, right, bottom, left ]
+      target: ->
+        shim = $(sandbox()).css
+          position: 'absolute'
+          top: 50
+          left: 100
+          width: 200
+          height: 200
+        appendSetFixtures shim
+        shim
+    'the string ‘parent’':
+      config: -> 'parent'
+      target: ($draggable) ->
+        target = $draggable.parent()
+        appendSetFixtures target
+        target
+    'the string ‘document’':
+      config: -> 'document'
+      target: -> $(document.documentElement)
+    'the string ‘window’':
+      config: -> 'window'
+      target: -> $(window)
+    'a selector string':
+      config: -> '#jasmine-fixtures'
+      target: -> $('#jasmine-fixtures')
+    'a DOM element':
+      config: -> $('#jasmine-fixtures').get(0)
+      target: -> $('#jasmine-fixtures')
+    'a jQuery Object':
+      config: -> $('#jasmine-fixtures')
+      target: -> $('#jasmine-fixtures')
   elementPositionVariants: ['static', 'absolute', 'fixed']
   elementTransformednesses:
     'non-transformed': -> {}
@@ -585,6 +618,114 @@ describe 'A draggable', ->
               it 'should have been removed', ->
                 expect(@remove).toHaveBeenCalled()
                 expect(@removedElement).toBe(@appendedElement)
+
+  describe 'configured with a containment option', ->
+
+    for variant, containmentOptions of options.containmentConfigVariants
+      do (variant, containmentOptions) ->
+
+        describe "such as #{variant}", ->
+
+          beforeEach ->
+            loadFixtures 'draggable_containable.html'
+            @$draggable = $('#draggable_containable').draggable(containment: containmentOptions.config())
+
+            # Calculate properties of the container
+            container = containmentOptions.target(@$draggable)
+            containerWidth = container.width()
+            containerHeight = container.height()
+            containerOffset = container.offset()
+            containerPadding =
+              top: parseFloat(container.css('paddingTop')) or 0
+              right: parseFloat(container.css('paddingRight')) or 0
+              bottom: parseFloat(container.css('paddingBottom')) or 0
+              left: parseFloat(container.css('paddingLeft')) or 0
+            containerBorder =
+              top: parseFloat(container.css('borderTopWidth')) or 0
+              right: parseFloat(container.css('borderRightWidth')) or 0
+              bottom: parseFloat(container.css('borderBottomWidth')) or 0
+              left: parseFloat(container.css('borderLeftWidth')) or 0
+
+            # Get the bounding box of the container
+            @bounds = if $(window).is(container)
+              top: container.scrollTop()
+              right: container.scrollLeft() + container.width()
+              bottom: container.scrollTop() + container.height()
+              left: container.scrollLeft()
+            else
+              top: containerOffset.top + containerPadding.top + containerBorder.top
+              right: containerOffset.left + containerWidth - (containerPadding.right + containerBorder.right)
+              bottom: containerOffset.top + containerHeight - (containerPadding.bottom + containerBorder.bottom)
+              left: containerOffset.left + containerPadding.left + containerBorder.left
+
+          describe 'when dragged', ->
+
+            beforeEach ->
+              draggableOffset = @$draggable.offset()
+
+              # Grab the draggable by the very top corner to simplify the upcoming math
+              @$draggable.simulate 'mousedown',
+                clientX: draggableOffset.left
+                clientY: draggableOffset.top
+              # Start the drag
+              $(document).simulate 'mousemove',
+                clientX: draggableOffset.left + 1
+                clientY: draggableOffset.top + 1
+
+              # Grab the helper
+              @$helper = @$draggable.data('draggable').$helper
+
+            describe 'above the boundary', ->
+
+              beforeEach ->
+                $(document).simulate 'mousemove',
+                  clientX: @bounds.left
+                  clientY: @bounds.top - 1
+
+                @topOverflow = Math.max 0, @bounds.top - @$helper.get(0).getBoundingClientRect().top
+                @bottomOverflow = Math.max 0, @$helper.get(0).getBoundingClientRect().bottom - @bounds.bottom
+
+              it 'should equalize the top and bottom overflow', ->
+                expect(@topOverflow - @bottomOverflow).toBe(0)
+
+            describe 'to the right of the boundary', ->
+
+              beforeEach ->
+                $(document).simulate 'mousemove',
+                  clientX: @bounds.left + (@bounds.right - @bounds.left) + 1
+                  clientY: @bounds.top
+
+                @leftOverflow = Math.max 0, @bounds.left - @$helper.get(0).getBoundingClientRect().left
+                @rightOverflow = Math.max 0, @$helper.get(0).getBoundingClientRect().right - @bounds.right
+
+              it 'should equalize the left and right overflow', ->
+                expect(@leftOverflow - @rightOverflow).toBe(0)
+
+            describe 'below the boundary', ->
+
+              beforeEach ->
+                $(document).simulate 'mousemove',
+                  clientX: @bounds.left
+                  clientY: @bounds.top + (@bounds.bottom - @bounds.top) + 1
+
+                @topOverflow = Math.max 0, @bounds.top - @$helper.get(0).getBoundingClientRect().top
+                @bottomOverflow = Math.max 0, @$helper.get(0).getBoundingClientRect().bottom - @bounds.bottom
+
+              it 'should equalize the top and bottom overflow', ->
+                expect(@topOverflow - @bottomOverflow).toBe(0)
+
+            describe 'to the left of the boundary', ->
+
+              beforeEach ->
+                $(document).simulate 'mousemove',
+                  clientX: @bounds.left - 1
+                  clientY: @bounds.top
+
+                @leftOverflow = Math.max 0, @bounds.left - @$helper.get(0).getBoundingClientRect().left
+                @rightOverflow = Math.max 0, @$helper.get(0).getBoundingClientRect().right - @bounds.right
+
+              it 'should equalize the left and right overflow', ->
+                expect(@leftOverflow - @rightOverflow).toBe(0)
 
   describe 'of any sort', ->
 

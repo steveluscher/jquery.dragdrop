@@ -9,6 +9,10 @@
   left: auto;
   right: 50px;
 }
+#draggable_containable {
+	margin: 10px;
+	border: 1px solid black;
+}
 #droppable_nested_parent {
   left: auto;
   right: 175px;

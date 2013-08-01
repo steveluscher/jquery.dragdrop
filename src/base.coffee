@@ -6,6 +6,7 @@ class jQuery.dragdrop
   #
 
   getConfig: -> @config ||= @applyDefaults @options, @defaults
+  isArray: Array.isArray or (putativeArray) -> Object::toString.call(putativeArray) is '[object Array]'
   isNumber: (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
   isNaN: (obj) -> @isNumber(obj) and window.isNaN(obj)
   applyDefaults: (obj, sources...) ->

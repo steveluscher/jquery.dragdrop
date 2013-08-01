@@ -96,6 +96,15 @@ jQuery ->
       # * ($draggable, e) ->: a function that returns a jQuery collection, or a collection of DOM elements
       stack: false
 
+      # Containment options:
+      # * an array of coordinates: a bounding box, relative to the page, in the form [x1, y1, x2, y2]
+      # * ‘parent’: bound the draggable helper to the draggable's parent element
+      # * ‘document’: bound the draggable helper to the document element
+      # * ‘window’: bound the draggable helper to the viewport
+      # * selector string: bound the draggable helper to the first element matched by a selector
+      # * element: a jQuery object, or a DOM element
+      containment: false
+
     #
     # Initialization
     #
@@ -301,6 +310,9 @@ jQuery ->
 
       @moveHelperToTopOfStack(stackConfig, e) if not helperIsSynthesized and stackConfig = @getConfig().stack
 
+      # Cache the helper's bounds
+      @bounds = @calculateContainmentBounds() unless @getConfig().containment is false
+
       # Map the mouse coordinates into the helper's coordinate space
       {
         x: @mousedownEvent.LocalX
@@ -316,12 +328,12 @@ jQuery ->
     handleDrag: (e, immediate = false) ->
       dragHandler = =>
         # Map the mouse coordinates into the element's coordinate space
-        @localMousePosition = convertPointFromPageToNode @parent, new Point(e.pageX, e.pageY)
+        localMousePosition = convertPointFromPageToNode @parent, new Point(e.pageX, e.pageY)
 
         # How far has the object moved from its original position?
         delta =
-          x: @localMousePosition.x - @mousedownEvent.LocalX
-          y: @localMousePosition.y - @mousedownEvent.LocalY
+          x: localMousePosition.x - @mousedownEvent.LocalX
+          y: localMousePosition.y - @mousedownEvent.LocalY
 
         # Calculate the helper's target position
         targetPosition =
@@ -333,6 +345,61 @@ jQuery ->
           left: @elementStartPageOffset.x + (e.pageX - @mousedownEvent.pageX)
           top: @elementStartPageOffset.y + (e.pageY - @mousedownEvent.pageY)
 
+        if @bounds
+          # Store the helper's original position in case we need to move it back
+          helperOriginalPosition =
+            top: @$helper.css('top')
+            left: @$helper.css('left')
+
+          # Move the drag helper into its candidate position
+          @$helper.css targetPosition
+
+          # Get the page-relative bounds of the drag helper in its candidate position
+          pageRelativeHelperBoundsWithMargin = @getPageRelativeBoundingBox @$helper, [
+            0 # Top
+            @helperSize.width # Right
+            @helperSize.height # Bottom
+            0 # Left
+          ]
+
+          # Calculate the number of pixels the drag delper overflows the containment boundary
+          overflowTop = @bounds[0] - pageRelativeHelperBoundsWithMargin[0]
+          overflowRight = pageRelativeHelperBoundsWithMargin[1] - @bounds[1]
+          overflowBottom = pageRelativeHelperBoundsWithMargin[2] - @bounds[2]
+          overflowLeft = @bounds[3] - pageRelativeHelperBoundsWithMargin[3]
+
+          if overflowLeft > 0 or overflowRight > 0
+            # What's the target vertical overlap?
+            targetOverlap = Math.max 0, (overflowLeft + overflowRight) / 2
+
+            # What's the adjustment to get there?
+            pageRelativeXAdjustment = if overflowLeft > overflowRight
+              overflowLeft - targetOverlap
+            else
+              targetOverlap - overflowRight
+
+          if overflowTop > 0 or overflowBottom > 0
+            # What's the target horizontal overlap?
+            targetOverlap = Math.max 0, (overflowTop + overflowBottom) / 2
+
+            # What's the adjustment to get there?
+            pageRelativeYAdjustment = if overflowTop > overflowBottom
+              overflowTop - targetOverlap
+            else
+              targetOverlap - overflowBottom
+
+          if pageRelativeXAdjustment or pageRelativeYAdjustment
+            # Adjust the drag helper's target offset
+            targetOffset.left += pageRelativeXAdjustment if pageRelativeXAdjustment
+            targetOffset.top += pageRelativeYAdjustment if pageRelativeYAdjustment
+
+            # Adjust the drag helper's target position
+            adjustedLocalMousePosition = convertPointFromPageToNode @parent, new Point(e.pageX + (pageRelativeXAdjustment or 0), e.pageY + (pageRelativeYAdjustment or 0))
+            targetPosition.left += adjustedLocalMousePosition.x - localMousePosition.x
+            targetPosition.top += adjustedLocalMousePosition.y - localMousePosition.y
+          else
+            helperPositionIsFinal = true
+
         # Compute the event metadata
         eventMetadata = @getEventMetadata(targetPosition, targetOffset)
 
@@ -341,11 +408,12 @@ jQuery ->
 
         # Call any user-supplied drag callback; cancel the drag if it returns false
         if @getConfig().drag?(dragEvent, eventMetadata) is false
+          @$helper.css helperOriginalPosition if helperOriginalPosition # Put the helper back where you found it
           @handleDragStop(e)
           return
 
         # Move the helper
-        @$helper.css eventMetadata.position
+        @$helper.css eventMetadata.position unless helperPositionIsFinal
 
         # Trigger the drag event on this draggable's element
         @$element.trigger(dragEvent, eventMetadata)
@@ -436,6 +504,139 @@ jQuery ->
 
       # Broadcast!
       $(jQuery.draggable::).trigger(event, @)
+
+    getPageRelativeBoundingBox: (element, elementEdges) ->
+      xCoords = []
+      yCoords = []
+
+      # Store an array of element-relative coordinates
+      elementCoords = [
+        [elementEdges[3], elementEdges[0]] # Top-left corner
+        [elementEdges[1], elementEdges[0]] # Top-right corner
+        [elementEdges[1], elementEdges[2]] # Bottom-right corner
+        [elementEdges[3], elementEdges[2]] # Bottom-left corner
+      ]
+
+      # Convert the coordinates to page-relative ones
+      for coord in elementCoords
+        p = convertPointFromNodeToPage(element.get(0), new Point(coord[0], coord[1]))
+        xCoords.push p.x
+        yCoords.push p.y
+
+      # Calculate the page-relative bounding box
+      [
+        Math.min.apply this, yCoords
+        Math.max.apply this, xCoords
+        Math.max.apply this, yCoords
+        Math.min.apply this, xCoords
+      ]
+
+    calculateContainmentBounds: ->
+      containmentConfig = @getConfig().containment
+
+      # Get the page-relative bounds of the container
+      pageRelativeContainmentBounds = if @isArray containmentConfig
+        # Clone the config; use it as-is
+        containmentConfig.slice(0)
+      else
+        # Get the container
+        container =
+          switch containmentConfig
+            when 'parent' then @$element.parent()
+            when 'window' then $(window)
+            when 'document' then $(document.documentElement)
+            else $(containmentConfig)
+
+        if container.length
+
+          if $(window).is(container)
+            # Get the page-relative edges of the window
+            windowLeftEdge = container.scrollLeft()
+            windowTopEdge = container.scrollTop()
+
+            # Store the viewport's page-relative bounding box
+            [
+              windowLeftEdge # Top
+              windowLeftEdge + container.width() # Right
+              windowTopEdge + container.height() # Bottom
+              windowLeftEdge # Left
+            ]
+          else
+            # Get the container's size
+            containerWidth = container.width()
+            containerHeight = container.height()
+
+            # Get the container's padding
+            containerTopPadding = parseFloat(container.css('paddingTop')) or 0
+            containerLeftPadding = parseFloat(container.css('paddingLeft')) or 0
+
+            # Get the container's border width
+            containerTopBorder = parseFloat(container.css('borderTopWidth')) or 0
+            containerLeftBorder = parseFloat(container.css('borderLeftWidth')) or 0
+
+            # Calculate the edges
+            topEdge = containerTopPadding + containerTopBorder
+            bottomEdge = topEdge + containerHeight
+            leftEdge = containerLeftPadding + containerLeftBorder
+            rightEdge = leftEdge + containerWidth
+
+            # Store the container's page-relative bounding box
+            @getPageRelativeBoundingBox container, [
+              topEdge
+              rightEdge
+              bottomEdge
+              leftEdge
+            ]
+
+      return unless pageRelativeContainmentBounds
+
+      # Get (and cache) the margins of the drag helper
+      @helperMargins =
+        top: parseFloat(@$helper.css('marginTop')) or 0
+        right: parseFloat(@$helper.css('marginRight')) or 0
+        bottom: parseFloat(@$helper.css('marginBottom')) or 0
+        left: parseFloat(@$helper.css('marginLeft')) or 0
+
+      # Get (and cache) the size of the drag helper
+      @helperSize =
+        height: @$helper.outerHeight()
+        width: @$helper.outerWidth()
+
+      if @helperMargins.top or @helperMargins.right or @helperMargins.bottom or @helperMargins.left # …we must adjust the size of the containment boundary
+        # Get the page-relative bounds of the drag helper
+        pageRelativeHelperBounds = @getPageRelativeBoundingBox @$helper, [
+          0 # Top
+          @helperSize.width # Right
+          @helperSize.height # Bottom
+          0 # Left
+        ]
+
+        # Get the page-relative bounds of the drag helper including its margins
+        pageRelativeHelperBoundsWithMargin = @getPageRelativeBoundingBox @$helper, [
+          -@helperMargins.top # Top
+          @helperSize.width + @helperMargins.right # Right
+          @helperSize.height + @helperMargins.bottom # Bottom
+          -@helperMargins.left # Left
+        ]
+
+        # Adjust the containment bounds by the difference between those two bounding boxes
+        pageRelativeContainmentBounds[0] -= pageRelativeHelperBoundsWithMargin[0] - pageRelativeHelperBounds[0]
+        pageRelativeContainmentBounds[1] -= pageRelativeHelperBoundsWithMargin[1] - pageRelativeHelperBounds[1]
+        pageRelativeContainmentBounds[2] -= pageRelativeHelperBoundsWithMargin[2] - pageRelativeHelperBounds[2]
+        pageRelativeContainmentBounds[3] -= pageRelativeHelperBoundsWithMargin[3] - pageRelativeHelperBounds[3]
+
+        # If the containment bounding box has collapsed, expand it to a midpoint between the collapsed edges
+        if pageRelativeContainmentBounds[0] > pageRelativeContainmentBounds[2]
+          pageRelativeContainmentBounds[0] =
+          pageRelativeContainmentBounds[2] =
+            pageRelativeContainmentBounds[2] + (pageRelativeContainmentBounds[0] - pageRelativeContainmentBounds[2]) / 2
+        if pageRelativeContainmentBounds[1] < pageRelativeContainmentBounds[3]
+          pageRelativeContainmentBounds[1] =
+          pageRelativeContainmentBounds[3] =
+            pageRelativeContainmentBounds[1] + (pageRelativeContainmentBounds[3] - pageRelativeContainmentBounds[1]) / 2
+
+      # Return the page-relative bounding box
+      pageRelativeContainmentBounds
 
     cancelAnyScheduledDrag: ->
       return unless @scheduledDragId
@@ -534,11 +735,15 @@ jQuery ->
     cleanUp: ->
       # Clean up
       @dragStarted = false
-      @elementStartPageOffset = {}
-      @helperStartPosition = {}
       delete @$helper
-      delete @parent
+      delete @bounds
+      delete @elementStartPageOffset
+      delete @helperMargins
+      delete @helperSize
+      delete @helperStartPosition
       delete @mousedownEvent
+      delete @originalPointerEventsPropertyValue
+      delete @parent
 
   $.fn.draggable = (options) ->
     this.each ->
