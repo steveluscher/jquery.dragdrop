@@ -526,7 +526,7 @@ describe 'A draggable', ->
             # The draggable's start position
             @start = @$draggable.offset()
 
-            # Drag the draggable a standard distance, using the handle
+            # Drag the draggable a standard distance, using a descendant of the handle
             @handle.children().simulate 'drag',
               dx: options.dragDistance
               dy: options.dragDistance
@@ -544,7 +544,7 @@ describe 'A draggable', ->
             # The draggable's start position
             @start = @$draggable.offset()
 
-            # Drag the draggable a standard distance, using the handle
+            # Drag the draggable a standard distance
             @$draggable.simulate 'drag',
               dx: options.dragDistance
               dy: options.dragDistance
