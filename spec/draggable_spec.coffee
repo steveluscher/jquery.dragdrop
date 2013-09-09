@@ -10,6 +10,33 @@ options =
   scrollOffsetVariants:
     'no': 0
     'a non-zero': 50
+  cursorAtConfigVariants:
+    'single':
+      left: { left: 5 }
+      right: { right: 5 }
+      top: { top: 5 }
+      bottom: { bottom: 5 }
+    'double':
+      'top and left': { top: 5, left: 5 }
+      'top and right': { top: 5, right: 5 }
+      'bottom and right': { bottom: 5, right: 5 }
+      'bottom and left': { bottom: 5, left: 5 }
+    'competing':
+      'left and right': { left: 5, right: 5 }
+      'top and bottom': { top: 5, bottom: 5 }
+  cursorAtConfigGrabPoints:
+    'top-left': (draggable) ->
+      left: draggable.offset().left
+      top: draggable.offset().top
+    'top-right': (draggable) ->
+      left: draggable.offset().left + draggable.width()
+      top: draggable.offset().top
+    'bottom-right': (draggable) ->
+      left: draggable.offset().left + draggable.width()
+      top: draggable.offset().top + draggable.height()
+    'bottom-left': (draggable) ->
+      left: draggable.offset().left
+      top: draggable.offset().top + draggable.height()
   cancelConfigVariants:
     'selector': -> '#cancelingAgent'
     'DOM element': -> $('#cancelingAgent').get(0)
@@ -104,6 +131,102 @@ describe 'A draggable', ->
 
     it 'should possess the supplied draggable class', ->
       expect(@$draggable).toHaveClass options.alternateDraggableClass
+
+  describe 'configured using a cursorAt option', ->
+    for type, cursorAtConfigs of options.cursorAtConfigVariants
+      do (type, cursorAtConfigs) ->
+
+        describe "such as a #{type} edge one", ->
+
+          for edge, cursorAtConfig of cursorAtConfigs
+            do (edge, cursorAtConfig) ->
+
+              describe "configured with a #{edge} edge", ->
+
+                beforeEach ->
+                  loadFixtures 'draggable_static.html'
+                  @$draggable = $('#draggable_static').draggable(cursorAt: cursorAtConfig)
+
+                describe 'while in mid-drag', ->
+
+                  for grabPoint, getGrabPointOffset of options.cursorAtConfigGrabPoints
+                    do (grabPoint, getGrabPointOffset) ->
+
+                      describe "grabbed from the #{grabPoint}", ->
+
+                        beforeEach ->
+                          # Record the start position of the draggable
+                          @originalOffset = @$draggable.offset()
+
+                          # Where are we going to grab the thing from?
+                          @grabPointOffset = getGrabPointOffset(@$draggable)
+
+                          # Start at the top corner of the draggable
+                          @$draggable.simulate 'mousedown',
+                            clientX: @grabPointOffset.left
+                            clientY: @grabPointOffset.top
+
+                          # Move it by one pixel
+                          $(document).simulate 'mousemove',
+                            clientX: @grabPointOffset.left + 1
+                            clientY: @grabPointOffset.top + 1
+
+                          # Grab the helper
+                          @$helper = @$draggable.data('draggable').$helper
+
+                        it 'should find itself horizontally offset by the drag distance, minus the nearest horizontal anchor point', ->
+                          if cursorAtConfig.left? or cursorAtConfig.right?
+                            # Find the cursor's start position in node coordinates
+                            cursorNodeOffset =
+                              left: @grabPointOffset.left - @originalOffset.left
+                              top: @grabPointOffset.top - @originalOffset.top
+
+                            # Find the anchor's node offset
+                            leftAnchorNodeOffset = cursorAtConfig.left
+                            rightAnchorNodeOffset = @$helper.width() - cursorAtConfig.right if cursorAtConfig.right?
+
+                            # Find the difference between the two
+                            delta =
+                              left: cursorNodeOffset.left - leftAnchorNodeOffset if leftAnchorNodeOffset?
+                              right: cursorNodeOffset.left - rightAnchorNodeOffset if rightAnchorNodeOffset?
+
+                            # Choose the nearest anchor edge
+                            anchorTranslationDistance = if delta.left? and delta.right?
+                              if Math.abs(delta.left) < Math.abs(delta.right)
+                                delta.left
+                              else
+                                delta.right
+                            else
+                              delta.left or delta.right or cursorNodeOffset.left
+
+                            expect(@$helper.offset().left).toBe(@originalOffset.left + 1 + anchorTranslationDistance)
+
+                        it 'should find itself vertically offset by the drag distance, minus the nearest vertical anchor point', ->
+                          if cursorAtConfig.top? or cursorAtConfig.bottom?
+                            # Find the cursor's start position in node coordinates
+                            cursorNodeOffset =
+                              top: @grabPointOffset.top - @originalOffset.top
+                              top: @grabPointOffset.top - @originalOffset.top
+
+                            # Find the anchor's node offset
+                            topAnchorNodeOffset = cursorAtConfig.top
+                            bottomAnchorNodeOffset = @$helper.height() - cursorAtConfig.bottom if cursorAtConfig.bottom?
+
+                            # Find the difference between the two
+                            delta =
+                              top: cursorNodeOffset.top - topAnchorNodeOffset if topAnchorNodeOffset?
+                              bottom: cursorNodeOffset.top - bottomAnchorNodeOffset if bottomAnchorNodeOffset?
+
+                            # Choose the nearest anchor edge
+                            anchorTranslationDistance = if delta.top? and delta.bottom?
+                              if Math.abs(delta.top) < Math.abs(delta.bottom)
+                                delta.top
+                              else
+                                delta.bottom
+                            else
+                              delta.top or delta.bottom or cursorNodeOffset.top
+
+                            expect(@$helper.offset().top).toBe(@originalOffset.top + 1 + anchorTranslationDistance)
 
   describe 'configured using the draggingClass option', ->
 

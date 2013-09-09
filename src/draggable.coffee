@@ -105,6 +105,10 @@ jQuery ->
       # * element: a jQuery object, or a DOM element
       containment: false
 
+      # Cursor anchor point options:
+      # * { top: …, right: …, bottom: …, left: … }: an object specifying a waypoint from a draggable's edge, the nearest of which should snap to the cursor when the draggable is dragged
+      cursorAt: false
+
     #
     # Initialization
     #
@@ -275,6 +279,47 @@ jQuery ->
       else
         # Store the start position of the element with respect to its location in the document flow
         new Point parseFloat(@$element.css('left')), parseFloat(@$element.css('top'))
+
+      if cursorAtConfig = @getConfig().cursorAt
+        # Where is the cursor, in node coordinates?
+        cursorNodeOffset = convertPointFromPageToNode @$element.get(0), new Point(@mousedownEvent.clientX, @mousedownEvent.clientY)
+
+        # What are the cursor anchors' offsets in node coordinates?
+        leftAnchorNodeOffset = cursorAtConfig.left
+        rightAnchorNodeOffset = @$element.width() - cursorAtConfig.right if cursorAtConfig.right?
+        topAnchorNodeOffset = cursorAtConfig.top
+        bottomAnchorNodeOffset = @$element.height() - cursorAtConfig.bottom if cursorAtConfig.bottom?
+
+        # Choose the anchor nearest the cursor
+        horizontalAnchorOffset = if leftAnchorNodeOffset? and rightAnchorNodeOffset?
+          if Math.abs(cursorNodeOffset.x - leftAnchorNodeOffset) < Math.abs(cursorNodeOffset.x - rightAnchorNodeOffset)
+            leftAnchorNodeOffset
+          else
+            rightAnchorNodeOffset
+        else
+          leftAnchorNodeOffset or rightAnchorNodeOffset or cursorNodeOffset.x
+
+        verticalAnchorOffset = if topAnchorNodeOffset? and bottomAnchorNodeOffset?
+          if Math.abs(cursorNodeOffset.y - topAnchorNodeOffset) < Math.abs(cursorNodeOffset.y - bottomAnchorNodeOffset)
+            topAnchorNodeOffset
+          else
+            bottomAnchorNodeOffset
+        else
+          topAnchorNodeOffset or bottomAnchorNodeOffset or cursorNodeOffset.y
+
+        # Calculate the point to which the mouse should be anchored
+        mouseAnchorPageOffset = convertPointFromNodeToPage @$element.get(0), new Point(horizontalAnchorOffset , verticalAnchorOffset)
+
+        # Calculate the delta between where the mouse is and where we would like it to appear
+        delta =
+          left: @mousedownEvent.clientX - mouseAnchorPageOffset.x
+          top: @mousedownEvent.clientY - mouseAnchorPageOffset.y
+
+        # Translate the element to place it under the cursor at the desired anchor point
+        @helperStartPosition.x += delta.left
+        @helperStartPosition.y += delta.top
+        @elementStartPageOffset.x += delta.left
+        @elementStartPageOffset.y += delta.top
 
       # Compute the event metadata
       startPosition = @pointToPosition @helperStartPosition
