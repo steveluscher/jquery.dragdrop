@@ -152,6 +152,11 @@ jQuery ->
     #
 
     handleElementMouseDown: (e) =>
+      # Blur the currently active element, unless it's the body (silly Internet Explorer)
+      # https://github.com/jquery/jquery-ui/commit/fcd1cafac8afe3a947676ec018e844eeada5b9de#commitcomment-3956626
+      activeElement = $(document.activeElement)
+      activeElement.blur() unless activeElement.is('body')
+
       isLeftButton = e.which is 1
       return unless isLeftButton # Left clicks only, please
 

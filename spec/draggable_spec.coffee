@@ -90,6 +90,9 @@ options =
     'implicitly':
       top: 'auto'
       left: 'auto'
+  possibleActiveElementSelectors:
+    'the body': 'body'
+    'a text field': 'input[type="text"]'
   getTransformCSS: (scale, skew, rotate, translate, originXPercent = 1, originYPercent = 1) ->
     originString = "#{originXPercent * 100}% #{originYPercent * 100}%"
     transformString = "rotate(#{rotate}deg) scale(#{scale}) skew(#{skew}deg) translate(#{translate}px)"
@@ -1425,3 +1428,34 @@ describe 'A stack of draggables', ->
 
             it 'should not have changed the z-index of the top draggable', ->
               expect(@$topDraggable).toHaveCss { zIndex: @indices.top }
+
+describe 'An active element', ->
+
+  for description, activeElementSelector of options.possibleActiveElementSelectors
+    do (description, activeElementSelector) ->
+
+      describe "such as #{description}", ->
+
+        beforeEach ->
+          loadFixtures 'focussable_elements.html'
+
+          # Get the active element
+          @activeElement = $(activeElementSelector)
+
+          # Focus it
+          @activeElement.focus()
+
+        describe 'when a draggable is mousedown’d upon', ->
+
+          beforeEach ->
+            appendLoadFixtures 'draggable_static.html'
+            @$draggable = $('#draggable_static').draggable()
+
+            center = SpecHelper.mouseDownInCenterOf @$draggable
+
+          if activeElementSelector is 'body'
+            it 'should still be the active element', ->
+              expect(@activeElement.get(0)).toBe(document.activeElement)
+          else
+            it 'should no longer be the active element', ->
+              expect(@activeElement.get(0)).not.toBe(document.activeElement)
