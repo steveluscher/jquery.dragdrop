@@ -109,6 +109,10 @@ jQuery ->
       # * { top: …, right: …, bottom: …, left: … }: an object specifying a waypoint from a draggable's edge, the nearest of which should snap to the cursor when the draggable is dragged
       cursorAt: false
 
+      # Distance option:
+      # * The distance in pixels that the mouse needs to move before drag is initiated
+      distance: false
+
     #
     # Initialization
     #
@@ -190,6 +194,17 @@ jQuery ->
         # Trigger the drag event
         @handleDrag(e)
       else
+        thresholdDistance = @getConfig().distance
+        if thresholdDistance?
+          # Find the actual distance travelled by the mouse
+          deltaX = e.clientX - @mousedownEvent.clientX
+          deltaY = e.clientY - @mousedownEvent.clientY
+
+          distanceMoved = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2))
+
+          # Prevent the drag start if the distance moved is less than the threshold distance
+          return true if distanceMoved < thresholdDistance
+
         # Trigger the start event
         @handleDragStart(e)
 
