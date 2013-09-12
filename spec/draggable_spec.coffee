@@ -10,6 +10,8 @@ options =
   scrollOffsetVariants:
     'no': 0
     'a non-zero': 50
+  distanceConfig:
+    'distance': 10
   cursorAtConfigVariants:
     'single':
       left: { left: 5 }
@@ -125,6 +127,60 @@ describe 'A draggable', ->
 
     it 'should possess the default draggable class', ->
       expect(@$draggable).toHaveClass $.draggable::defaults['draggableClass']
+
+  describe 'configured using the distance option', ->
+
+    beforeEach ->
+      loadFixtures 'draggable_static.html'
+      @$draggable = $('#draggable_static').draggable(options.distanceConfig)
+
+    describe 'when dragged less than the drag distance threshold', ->
+
+      beforeEach ->
+        # Save the original position
+        @originalPosition = @$draggable.offset()
+
+        # Start at the top corner of the draggable
+        center = SpecHelper.mouseDownInCenterOf @$draggable
+
+        # Move it by less than the drag distance
+        lessThanDistance = options.distanceConfig.distance - 0.1
+        delta = Math.floor Math.sqrt((lessThanDistance*lessThanDistance)/2)
+        $(document).simulate 'mousemove',
+          clientX: center.x + delta
+          clientY: center.y + delta
+
+      it 'should not have moved from original position', ->
+        expect(@$draggable.offset()).toEqual @originalPosition
+
+      it 'should not possess the default draggable class', ->
+        expect(@$draggable).not.toHaveClass $.draggable::defaults['draggingClass']
+
+    describe 'when dragged exactly or greater than the drag distance threshold', ->
+
+      beforeEach ->
+        # Save the original position
+        @originalPosition = @$draggable.offset()
+
+        # Start at the top corner of the draggable
+        center = SpecHelper.mouseDownInCenterOf @$draggable
+
+        # Move it by at least the drag distance
+        distance = options.distanceConfig.distance
+        @delta = Math.ceil Math.sqrt((distance*distance)/2)
+        $(document).simulate 'mousemove',
+          clientX: center.x + @delta
+          clientY: center.y + @delta
+
+      it 'should have moved the drag distance from the original position', ->
+        expectedPosition =
+          left: @originalPosition.left + @delta
+          top: @originalPosition.top + @delta
+
+        expect(@$draggable.offset()).toEqual expectedPosition
+
+      it 'should possess the default draggable class', ->
+        expect(@$draggable).toHaveClass $.draggable::defaults['draggingClass']
 
   describe 'configured using the draggableClass option', ->
 
