@@ -50,6 +50,9 @@ jQuery ->
       $(jQuery.draggable::).on
         start: @handleDraggableStart
 
+      # If there is already a draggable in the air, handle the draggable start event right away
+      @handleDraggableStart(jQuery.draggable.latestEvent, jQuery.draggable.draggableAloft) if jQuery.draggable.draggableAloft?
+
       # Make the plugin chainable
       this
 

@@ -390,6 +390,9 @@ jQuery ->
       # Mark the drag as having started
       @dragStarted = true
 
+      # Store a reference to this droppable in the class
+      jQuery.draggable.draggableAloft = @
+
       # Trigger the drag start event on this draggable's element
       @$element.trigger(dragStartEvent, eventMetadata)
 
@@ -503,6 +506,10 @@ jQuery ->
 
       if @dragStarted
 
+        # The draggable is no longer aloft
+        delete jQuery.draggable.draggableAloft
+        delete jQuery.draggable.latestEvent
+
         # Lest a click event occur before cleanup is called, decide whether it should be permitted or not
         @shouldCancelClick = !!@dragStarted
 
@@ -575,6 +582,9 @@ jQuery ->
     broadcast: (type, originalEvent) ->
       # Synthesize a new event with this type
       event = @synthesizeEvent(type, originalEvent)
+
+      # Store the event in the class; droppables instantiated after this draggable became aloft might be interested in it
+      jQuery.draggable.latestEvent = event
 
       # Broadcast!
       $(jQuery.draggable::).trigger(event, @)

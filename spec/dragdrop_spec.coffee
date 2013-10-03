@@ -1,3 +1,9 @@
+afterEach ->
+  # In the course of running tests, we often rip markup out while a draggable is in mid-air
+  # Perform some cleanup here
+  delete jQuery.draggable.draggableAloft
+  delete jQuery.draggable.latestEvent
+
 describe 'A droppable', ->
   options =
     alternateHoverClass: 'alternateHoverClass'
@@ -335,6 +341,49 @@ describe 'A droppable', ->
             expectedOffset: -> @$draggable.offset()
             expectedHelper: -> @$draggable
             expectedDraggable: -> @$draggable
+
+  describe 'created after a drag has already started', ->
+
+    beforeEach ->
+      loadFixtures 'draggable_static.html', 'droppable_absolute.html'
+      @$draggable = $('#draggable_static').draggable()
+
+      # Find the center of the draggable
+      @draggableCenter = SpecHelper.findCenterOf @$draggable
+
+      # Start a drag
+      @$draggable.simulate 'mousedown',
+        clientX: @draggableCenter.x
+        clientY: @draggableCenter.y
+      $(document).simulate 'mousemove',
+        clientX: @draggableCenter.x + 1
+        clientY: @draggableCenter.y
+
+      # Create the droppable
+      @$droppable = $('#droppable_absolute').droppable()
+
+      # Watch the droppable for the dropover event
+      spyOnEvent @$droppable, 'dropover'
+
+      # Find the center of the droppable
+      @droppableCenter = SpecHelper.findCenterOf @$droppable
+
+    describe 'having had an already-aloft draggable come to hover above it', ->
+
+      beforeEach ->
+        $(document).simulate 'mousemove',
+          clientX: @droppableCenter.x
+          clientY: @droppableCenter.y
+        @$draggable.simulate 'mouseup',
+          clientX: @droppableCenter.x
+          clientY: @droppableCenter.y
+        @$draggable.simulate 'click',
+          clientX: @droppableCenter.x
+          clientY: @droppableCenter.y
+
+      it 'should have the dropover event fired upon it', ->
+        expect('dropover').toHaveBeenTriggeredOn(@$droppable)
+        # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
 
 describe 'Nested droppables', ->
 
