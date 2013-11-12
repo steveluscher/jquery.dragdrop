@@ -1043,9 +1043,6 @@ describe 'A draggable', ->
         it 'should not possess the default dragging class', ->
           expect(@$draggable).not.toHaveClass $.draggable::defaults['draggingClass']
 
-        it 'should capture the mousedown event', ->
-          expect('mousedown').toHaveBeenPreventedOn(@$draggable)
-
         describe 'then moved', ->
 
           beforeEach ->
@@ -1068,6 +1065,9 @@ describe 'A draggable', ->
           it 'should have the drag event fired upon it', ->
             expect('drag').toHaveBeenTriggeredOn(@$draggable)
             # TODO: When jQuery Jasmine supports the same spy attributes as do regular Jasmine spies (mostRecentCall.args, callCount, etc…) write specs for the metadata argument of this event
+
+          it 'should not have caused any text to be selected in the document body', ->
+            expect(document.getSelection().type).toBe('None') # FIXME: This will never fail, because jQuery simulate doesn't cause text selection to happen with the mousedown/mousemove combo
 
           describe 'then having been released', ->
 

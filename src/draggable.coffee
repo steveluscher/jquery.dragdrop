@@ -178,6 +178,9 @@ jQuery ->
       # Lazily implement a set of coordinate conversion polyfills
       implementConvertPointPolyfill()
 
+      # Prevent the default mousedown event on the body; This disables text selection.
+      $(document.body).one 'mousedown', false
+
       # Store the mousedown event that started this drag
       @mousedownEvent = e
 
@@ -185,9 +188,6 @@ jQuery ->
       $(document).on
         mousemove: @handleDocumentMouseMove
         mouseup: @handleDocumentMouseUp
-
-      # Stop the mousedown event
-      false
 
     handleDocumentMouseMove: (e) =>
       if @dragStarted
