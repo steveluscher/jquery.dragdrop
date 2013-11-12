@@ -145,7 +145,7 @@ describe 'A draggable', ->
 
         # Move it by less than the drag distance
         lessThanDistance = options.distanceConfig.distance - 0.1
-        delta = Math.floor Math.sqrt((lessThanDistance*lessThanDistance)/2)
+        delta = Math.floor Math.sqrt((lessThanDistance*lessThanDistance) / 2)
         $(document).simulate 'mousemove',
           clientX: center.x + delta
           clientY: center.y + delta
@@ -167,7 +167,7 @@ describe 'A draggable', ->
 
         # Move it by at least the drag distance
         distance = options.distanceConfig.distance
-        @delta = Math.ceil Math.sqrt((distance*distance)/2)
+        @delta = Math.ceil Math.sqrt((distance*distance) / 2)
         $(document).simulate 'mousemove',
           clientX: center.x + @delta
           clientY: center.y + @delta
