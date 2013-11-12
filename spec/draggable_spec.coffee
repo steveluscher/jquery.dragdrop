@@ -1388,6 +1388,30 @@ describe 'A draggable', ->
                              it 'should find itself the drag distance from its original left offset', ->
                                expect(@$draggable.offset().left).toBeCloseTo(@originalOffset.left + options.dragDistance, 0)
 
+  describe 'with another draggable nested inside it', ->
+
+    beforeEach ->
+      loadFixtures "draggable_nested.html"
+      @$parentDraggable = $("#draggable_nested_parent").draggable()
+      @$childDraggable = $("#draggable_nested_child").draggable()
+
+    describe 'when its nested draggable is dragged', ->
+
+      beforeEach ->
+        # Store the offset of the parent draggable
+        @originalParentOffset = @$parentDraggable.offset()
+
+        # Drag the draggable a standard distance
+        @$childDraggable.simulate 'drag',
+          dx: options.dragDistance
+          dy: options.dragDistance
+
+      it 'should find itself at its original top offset', ->
+        expect(@$parentDraggable.offset().top).toBe(@originalParentOffset.top)
+
+      it 'should find itself at its original left offset', ->
+        expect(@$parentDraggable.offset().left).toBe(@originalParentOffset.left)
+
 describe 'A stack of draggables', ->
 
   beforeEach ->

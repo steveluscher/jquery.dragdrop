@@ -13,6 +13,18 @@
 	margin: 10px;
 	border: 1px solid black;
 }
+#draggable_nested_parent {
+  left: auto;
+  right: 300px;
+}
+#draggable_nested_child {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 70px;
+  height: 70px;
+  border: 1px solid rgba(0, 0, 255, 0.1);
+}
 #droppable_nested_parent {
   left: auto;
   right: 175px;

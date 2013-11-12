@@ -156,6 +156,9 @@ jQuery ->
     #
 
     handleElementMouseDown: (e) =>
+      # If another draggable received this mousedown before we did, bail.
+      return if e.originalEvent.jQueryDragdropAlreadyHandled is true
+
       # Blur the currently active element, unless it's the body (silly Internet Explorer)
       # https://github.com/jquery/jquery-ui/commit/fcd1cafac8afe3a947676ec018e844eeada5b9de#commitcomment-3956626
       activeElement = $(document.activeElement)
@@ -177,6 +180,9 @@ jQuery ->
 
       # Lazily implement a set of coordinate conversion polyfills
       implementConvertPointPolyfill()
+
+      # Set a flag on the event. Any draggables that contain this one will check for this flag. If they find it, they will ignore the mousedown
+      e.originalEvent.jQueryDragdropAlreadyHandled = true
 
       # Prevent the default mousedown event on the body; This disables text selection.
       $(document.body).one 'mousedown', false
