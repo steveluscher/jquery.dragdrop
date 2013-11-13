@@ -519,8 +519,20 @@ jQuery ->
         # Lest a click event occur before cleanup is called, decide whether it should be permitted or not
         @shouldCancelClick = !!@dragStarted
 
+        # Synthesize a new event to represent this drag start
+        dragStopEvent = @synthesizeEvent('dragstop', e)
+
         # Compute the event metadata
         eventMetadata = @getEventMetadata()
+
+        # Call any user-supplied stop callback
+        @getConfig().stop?(dragStopEvent, eventMetadata)
+
+        # Trigger the drag stop on this draggable's element
+        @$element.trigger(dragStopEvent, eventMetadata)
+
+        # Broadcast to interested subscribers that this droppable has been dropped
+        @broadcast('stop', e)
 
         if @getConfig().helper is 'original'
           # Remove the dragging class
@@ -533,18 +545,6 @@ jQuery ->
 
         # Restore the original value of the pointer-events property
         @$element.css(pointerEvents: @originalPointerEventsPropertyValue)
-
-        # Synthesize a new event to represent this drag start
-        dragStopEvent = @synthesizeEvent('dragstop', e)
-
-        # Call any user-supplied stop callback
-        @getConfig().stop?(dragStopEvent, eventMetadata)
-
-        # Trigger the drag stop on this draggable's element
-        @$element.trigger(dragStopEvent, eventMetadata)
-
-        # Broadcast to interested subscribers that this droppable has been dropped
-        @broadcast('stop', e)
 
       # Clean up
       @cleanUp()
