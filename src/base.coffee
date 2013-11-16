@@ -5,6 +5,15 @@ class jQuery.dragdrop
   # Utility functions
   #
 
+  getCSSEdge = (edge, oppositeEdge, $element) ->
+    # See if there exists a numeric value for the target edge
+    parseFloat($element.css(edge)) or
+    # If not, see if there is a numeric value for the opposite edge, then rely on jQuery.position to get the target edge
+    if parseFloat($element.css(oppositeEdge)) then $element.position()[edge] else null or
+    # Otherwise, return zero
+    0
+  getCSSLeft: ($element) -> getCSSEdge('left', 'right', $element)
+  getCSSTop: ($element) -> getCSSEdge('top', 'bottom', $element)
   getConfig: -> @config ||= @applyDefaults @options, @defaults
   isArray: Array.isArray or (putativeArray) -> Object::toString.call(putativeArray) is '[object Array]'
   isNumber: (obj) -> (obj is +obj) or toString.call(obj) is '[object Number]'
@@ -34,8 +43,8 @@ class jQuery.dragdrop
     metadata =
       # Report the position of the helper
       position: position or {
-        top: parseFloat(@$helper.css('top')) or 0
-        left: parseFloat(@$helper.css('left')) or 0
+        top: @getCSSTop(@$helper)
+        left: @getCSSLeft(@$helper)
       }
       # Report the offset of the helper
       offset: offset or @$helper.offset()

@@ -305,7 +305,7 @@ jQuery ->
         startPosition
       else
         # Store the start position of the element with respect to its location in the document flow
-        new Point parseFloat(@$element.css('left')), parseFloat(@$element.css('top'))
+        new Point @getCSSLeft(@$element), @getCSSTop(@$element)
 
       if cursorAtConfig = @getConfig().cursorAt
         # Where is the cursor, in node coordinates?

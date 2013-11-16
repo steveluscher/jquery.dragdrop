@@ -83,6 +83,15 @@ options =
     'a jQuery Object':
       config: -> $('#jasmine-fixtures')
       target: -> $('#jasmine-fixtures')
+  absoluteAnchorEdges:
+    'regular':
+      fixtureType: 'absolute'
+      horizontalEdge: 'left'
+      verticalEdge: 'top'
+    'opposite':
+      fixtureType: 'oppositely_anchored_absolute'
+      horizontalEdge: 'right'
+      verticalEdge: 'bottom'
   elementPositionVariants: ['static', 'absolute', 'fixed']
   elementTransformednesses:
     'non-transformed': -> {}
@@ -1167,35 +1176,45 @@ describe 'A draggable', ->
 
   describe 'of the absolutely positioned sort', ->
 
-    beforeEach ->
-      loadFixtures 'draggable_absolute.html'
-      @$draggable = $('#draggable_absolute').draggable()
+    for variant, edgeConfig of options.absoluteAnchorEdges
+      do (variant, edgeConfig) ->
 
-    describe 'while in mid-drag', ->
+        describe "anchored #{variant}ly", ->
+          beforeEach ->
+            loadFixtures "draggable_#{edgeConfig.fixtureType}.html"
+            @$draggable = $('#draggable_absolute').draggable()
 
-      beforeEach ->
-        center = SpecHelper.mouseDownInCenterOf @$draggable
+          describe 'while in mid-drag', ->
 
-        # Move it by the prescribed amount, without lifting the mouse button
-        $(document).simulate 'mousemove',
-          clientX: center.x + options.dragDistance
-          clientY: center.y + options.dragDistance
+            beforeEach ->
+              center = SpecHelper.mouseDownInCenterOf @$draggable
 
-      it 'should be positioned absolutely', ->
-        expect(@$draggable).toHaveCss { position: 'absolute' }
+              # Move it by the prescribed amount, without lifting the mouse button
+              $(document).simulate 'mousemove',
+                clientX: center.x + options.dragDistance
+                clientY: center.y + options.dragDistance
 
-    describe 'after having been dragged', ->
+            it 'should be positioned absolutely', ->
+              expect(@$draggable).toHaveCss { position: 'absolute' }
 
-      beforeEach ->
-        @originalOffset = @$draggable.offset()
+          describe 'after having been dragged', ->
 
-        # Drag the draggable a standard distance
-        @$draggable.simulate 'drag',
-          dx: options.dragDistance
-          dy: options.dragDistance
+            beforeEach ->
+              @originalOffset = @$draggable.offset()
 
-      it 'should be positioned absolutely', ->
-        expect(@$draggable).toHaveCss { position: 'absolute' }
+              # Drag the draggable a standard distance
+              @$draggable.simulate 'drag',
+                dx: options.dragDistance
+                dy: options.dragDistance
+
+            it 'should be positioned absolutely', ->
+              expect(@$draggable).toHaveCss { position: 'absolute' }
+
+            it 'should find itself the drag distance from its original top offset', ->
+              expect(@$draggable.offset().top).toBe(@originalOffset.top + options.dragDistance)
+
+            it 'should find itself the drag distance from its original left offset', ->
+              expect(@$draggable.offset().left).toBe(@originalOffset.left + options.dragDistance)
 
   describe 'of the fixedly positioned sort', ->
 

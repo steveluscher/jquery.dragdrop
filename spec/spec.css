@@ -5,6 +5,12 @@
   width: 100px;
   height: 100px;
 }
+.absolute.opposite {
+  left: auto;
+  top: auto;
+  right: 50px;
+  bottom: 175px;
+}
 #droppable_absolute {
   left: auto;
   right: 50px;
