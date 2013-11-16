@@ -159,11 +159,6 @@ jQuery ->
       # If another draggable received this mousedown before we did, bail.
       return if e.originalEvent.jQueryDragdropAlreadyHandled is true
 
-      # Blur the currently active element, unless it's the body (silly Internet Explorer)
-      # https://github.com/jquery/jquery-ui/commit/fcd1cafac8afe3a947676ec018e844eeada5b9de#commitcomment-3956626
-      activeElement = $(document.activeElement)
-      activeElement.blur() unless activeElement.is('body')
-
       isLeftButton = e.which is 1
       return unless isLeftButton # Left clicks only, please
 
@@ -184,8 +179,14 @@ jQuery ->
       # Set a flag on the event. Any draggables that contain this one will check for this flag. If they find it, they will ignore the mousedown
       e.originalEvent.jQueryDragdropAlreadyHandled = true
 
-      # Prevent the default mousedown event on the body; This disables text selection.
-      $(document.body).one 'mousedown', false
+      $(document.body).one 'mousedown', (e) ->
+        # Prevent the default mousedown event on the body; This disables text selection.
+        e.preventDefault()
+
+        # Since we've prevented the default action, we have to blur the active element manually, unless it's the body (silly Internet Explorer)
+        # https://github.com/jquery/jquery-ui/commit/fcd1cafac8afe3a947676ec018e844eeada5b9de#commitcomment-3956626
+        activeElement = $(document.activeElement)
+        activeElement.blur() unless activeElement.is(this)
 
       # Store the mousedown event that started this drag
       @mousedownEvent = e
