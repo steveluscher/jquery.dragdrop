@@ -194,7 +194,7 @@ jQuery ->
       dropOutEvent = @synthesizeEvent('dropout', e)
 
       # Call any user-supplied out callback
-      @getConfig().out?(dropOutEvent)
+      @getConfig().out?(dropOutEvent, eventMetadata)
 
       # Trigger the drop out event on this droppable's element
       @$element.trigger(dropOutEvent, eventMetadata)
