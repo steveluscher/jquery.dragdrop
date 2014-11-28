@@ -834,7 +834,7 @@
         eventMetadata = this.getEventMetadata();
         dropOutEvent = this.synthesizeEvent('dropout', e);
         if (typeof (_base = this.getConfig()).out === "function") {
-          _base.out(dropOutEvent);
+          _base.out(dropOutEvent, {});
         }
         return this.$element.trigger(dropOutEvent, eventMetadata);
       };

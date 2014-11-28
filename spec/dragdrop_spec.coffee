@@ -270,8 +270,8 @@ describe 'A droppable', ->
             it 'should have been called once', ->
               expect(@callback.callCount).toBe(1)
 
-            it 'should have been called with the jQuery mouse event as the first parameter', ->
-              expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event))
+            it 'should have been called with the jQuery mouse event as the first parameter and an empty object as second parameter', ->
+              expect(@callback).toHaveBeenCalledWith(jasmine.any(jQuery.Event), {})
 
             it 'should have been bound to the droppable’s plugin instance', ->
               expect(@valueOfThis).toBe(@$droppable.data('droppable'))
