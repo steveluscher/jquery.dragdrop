@@ -6,10 +6,10 @@ This project is distinct from jQuery UI Draggable/Droppable in its approach. jQu
 
 The cost of implementing a drag manager to support those collision modes is massive.
 
-                                                                  | jQuery UI       | jQuery DragDrop
-------------------------------------------------------------------|:---------------:|:--------------:
-Drop zones are z-index stackable                                  | :no_entry_sign: | :+1:
-Draggables and drop zones can be transformed using CSS Transforms | :no_entry_sign: | :+1:
+|                                                                   | jQuery UI       | jQuery DragDrop |
+|-------------------------------------------------------------------|-----------------|-----------------|
+| Drop zones are z-index stackable                                  | :no_entry_sign: | :+1:            |
+| Draggables and drop zones can be transformed using CSS Transforms | :no_entry_sign: | :+1:            |
 
 jQuery DragDrop trades sophisticated collision detection for performance, simplicity, and durability.
 
